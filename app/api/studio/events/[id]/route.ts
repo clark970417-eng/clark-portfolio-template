@@ -1,0 +1,5 @@
+import { env } from "cloudflare:workers";
+import { isAdmin } from "../../auth";
+
+export async function PATCH(request:Request,{params}:{params:Promise<{id:string}>}){if(!(await isAdmin()))return Response.json({error:"Unauthorized"},{status:401});const {status}=await request.json();if(!["draft","published"].includes(status))return Response.json({error:"Invalid status"},{status:400});await env.DB.prepare("UPDATE events SET status=?,updated_at=? WHERE id=?").bind(status,Date.now(),(await params).id).run();return Response.json({ok:true})}
+export async function DELETE(_request:Request,{params}:{params:Promise<{id:string}>}){if(!(await isAdmin()))return Response.json({error:"Unauthorized"},{status:401});const id=(await params).id;const photos=await env.DB.prepare("SELECT object_key FROM photos WHERE event_id=?").bind(id).all<{object_key:string}>();await Promise.all(photos.results.map(photo=>env.PHOTOS.delete(photo.object_key)));await env.DB.batch([env.DB.prepare("DELETE FROM photos WHERE event_id=?").bind(id),env.DB.prepare("DELETE FROM events WHERE id=?").bind(id)]);return Response.json({ok:true})}
