@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 
 type EventCategory = "school" | "outside-school";
 type EventItem = {
@@ -21,8 +21,34 @@ export function Studio({ initialEvents, signOutPath }: { initialEvents: EventIte
   const [editingTitleId, setEditingTitleId] = useState<string | null>(null);
   const [titleDraft, setTitleDraft] = useState("");
   const [confirmPhotoId, setConfirmPhotoId] = useState<string | null>(null);
+  const [lightbox, setLightbox] = useState<{ eventId: string; photoId: string } | null>(null);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
+
+  const lightboxPhotos = lightbox ? (photos[lightbox.eventId] ?? []) : [];
+  const lightboxIndex = lightbox ? lightboxPhotos.findIndex((photo) => photo.id === lightbox.photoId) : -1;
+  const lightboxPhoto = lightboxIndex >= 0 ? lightboxPhotos[lightboxIndex] : null;
+  const lightboxEvent = lightbox ? events.find((item) => item.id === lightbox.eventId) : null;
+
+  useEffect(() => {
+    if (!lightbox) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") setLightbox(null);
+      if (event.key === "ArrowLeft" && lightboxIndex > 0) {
+        setLightbox({ eventId: lightbox.eventId, photoId: lightboxPhotos[lightboxIndex - 1].id });
+      }
+      if (event.key === "ArrowRight" && lightboxIndex < lightboxPhotos.length - 1) {
+        setLightbox({ eventId: lightbox.eventId, photoId: lightboxPhotos[lightboxIndex + 1].id });
+      }
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [lightbox, lightboxIndex, lightboxPhotos]);
 
   async function create(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -126,7 +152,10 @@ export function Studio({ initialEvents, signOutPath }: { initialEvents: EventIte
   }
 
   async function togglePhotos(eventId: string) {
-    if (openEventId === eventId) return setOpenEventId(null);
+    if (openEventId === eventId) {
+      setLightbox(null);
+      return setOpenEventId(null);
+    }
     setOpenEventId(eventId);
     await loadPhotos(eventId);
   }
@@ -226,6 +255,7 @@ export function Studio({ initialEvents, signOutPath }: { initialEvents: EventIte
       if (response.ok) {
         setPhotos((current) => ({ ...current, [eventId]: (current[eventId] ?? []).filter((photo) => photo.id !== photoId) }));
         setEvents((current) => current.map((item) => item.id === eventId ? { ...item, photoCount: Math.max(0, item.photoCount - 1) } : item));
+        if (lightbox?.photoId === photoId) setLightbox(null);
         setConfirmPhotoId(null);
         setMessage("Photo deleted.");
       } else setMessage("The photo could not be deleted.");
@@ -279,7 +309,11 @@ export function Studio({ initialEvents, signOutPath }: { initialEvents: EventIte
                   <div className="photo-editor-grid">
                     {(photos[item.id] ?? []).map((photo, photoIndex) => (
                       <article className="photo-editor-card" key={photo.id}>
-                        <div className="photo-editor-image"><img src={photo.url} alt="" /><span>{photoIndex === 0 ? "Cover" : String(photoIndex + 1).padStart(2, "0")}</span></div>
+                        <button className="photo-editor-image" type="button" onClick={() => setLightbox({ eventId: item.id, photoId: photo.id })} aria-label={`Open photo ${photoIndex + 1} in full view`}>
+                          <img src={photo.url} alt="" />
+                          <span>{photoIndex === 0 ? "Cover" : String(photoIndex + 1).padStart(2, "0")}</span>
+                          <strong>View detail</strong>
+                        </button>
                         <div className={`photo-cover-action${photoIndex === 0 ? " is-cover" : ""}`}>{photoIndex === 0 ? <span>Current cover</span> : <button onClick={() => setCover(item.id, photoIndex)} disabled={busy}>Set as cover</button>}</div>
                         <div className="photo-editor-actions"><button aria-label={`Move photo ${photoIndex + 1} earlier`} onClick={() => movePhoto(item.id, photoIndex, -1)} disabled={busy || photoIndex === 0}>← Earlier</button><button aria-label={`Move photo ${photoIndex + 1} later`} onClick={() => movePhoto(item.id, photoIndex, 1)} disabled={busy || photoIndex === (photos[item.id]?.length ?? 0) - 1}>Later →</button></div>
                         <label>Description<input value={photo.alt} onChange={(event) => editPhotoAlt(item.id, photo.id, event.target.value)} placeholder="What is happening in this photograph?" /></label>
@@ -293,6 +327,23 @@ export function Studio({ initialEvents, signOutPath }: { initialEvents: EventIte
           </article>
         )) : <p className="studio-empty">Create your first event, then add the photographs you want to share.</p>}
       </section>
+      {lightbox && lightboxPhoto && lightboxEvent && (
+        <div className="photo-lightbox" role="dialog" aria-modal="true" aria-label={`Photo detail from ${lightboxEvent.title}`} onClick={() => setLightbox(null)}>
+          <div className="photo-lightbox-frame" onClick={(event) => event.stopPropagation()}>
+            <header>
+              <div><span>Photo detail</span><h2>{lightboxEvent.title}</h2></div>
+              <p>{String(lightboxIndex + 1).padStart(2, "0")} / {String(lightboxPhotos.length).padStart(2, "0")}</p>
+              <button type="button" onClick={() => setLightbox(null)} aria-label="Close photo detail">Close ×</button>
+            </header>
+            <div className="photo-lightbox-stage">
+              <button type="button" className="photo-lightbox-nav is-previous" aria-label="Previous photo" disabled={lightboxIndex === 0} onClick={() => setLightbox({ eventId: lightbox.eventId, photoId: lightboxPhotos[lightboxIndex - 1].id })}>←</button>
+              <img src={lightboxPhoto.url} alt={lightboxPhoto.alt || `Photo ${lightboxIndex + 1} from ${lightboxEvent.title}`} />
+              <button type="button" className="photo-lightbox-nav is-next" aria-label="Next photo" disabled={lightboxIndex === lightboxPhotos.length - 1} onClick={() => setLightbox({ eventId: lightbox.eventId, photoId: lightboxPhotos[lightboxIndex + 1].id })}>→</button>
+            </div>
+            <footer><p>{lightboxPhoto.alt || "No description yet."}</p><span>Use ← → keys to browse · Esc to close</span></footer>
+          </div>
+        </div>
+      )}
       <p className="studio-status" role="status">{message}</p>
     </main>
   );
