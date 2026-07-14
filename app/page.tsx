@@ -6,6 +6,28 @@ export const dynamic = "force-dynamic";
 
 export default async function Home() {
   const events = await getPublishedEvents();
+  const schoolEvents = events.filter((event) => event.category === "school");
+  const outsideSchoolEvents = events.filter((event) => event.category === "outside-school");
+
+  function EventGrid({ items }: { items: typeof events }) {
+    return (
+      <div className="contact-sheet">
+        {items.map((event, index) => (
+          <Link className={`event-card event-card-${(index % 5) + 1}`} href={`/events/${event.slug}`} key={event.id}>
+            <div className="event-image">
+              {event.coverUrl ? <img src={event.coverUrl} alt="" loading={index === 0 ? "eager" : "lazy"} decoding="async" fetchPriority={index === 0 ? "high" : "auto"} /> : <span className="empty-frame" />}
+              <span className="frame-corner frame-corner-a" />
+              <span className="frame-corner frame-corner-b" />
+            </div>
+            <div className="event-caption">
+              <h3>{event.title}</h3>
+              <span aria-hidden="true">↗</span>
+            </div>
+          </Link>
+        ))}
+      </div>
+    );
+  }
 
   return (
     <main>
@@ -23,31 +45,28 @@ export default async function Home() {
         <h1 id="intro-title">I keep the moments<br />that usually pass.</h1>
         <div className="hero-note">
           <span className="focus-mark" aria-hidden="true" />
-          <p>I’m Clark, a Taiwan-based high school student and photography enthusiast.</p>
+          <p>I’m Clark, a Taiwan-based student photographer documenting school life, performance, and community.</p>
         </div>
       </section>
 
       <section className="work-section" id="work" aria-labelledby="work-title">
-        <div className="section-heading">
-          <h2 id="work-title">Selected events</h2>
-          <p>{events.length ? `${events.length} stories` : "The archive begins here"}</p>
-        </div>
-
         {events.length ? (
-          <div className="contact-sheet">
-            {events.map((event, index) => (
-              <Link className={`event-card event-card-${(index % 5) + 1}`} href={`/events/${event.slug}`} key={event.id}>
-                <div className="event-image">
-                  {event.coverUrl ? <img src={event.coverUrl} alt="" /> : <span className="empty-frame" />}
-                  <span className="frame-corner frame-corner-a" />
-                  <span className="frame-corner frame-corner-b" />
-                </div>
-                <div className="event-caption">
-                  <h3>{event.title}</h3>
-                  <span aria-hidden="true">↗</span>
-                </div>
-              </Link>
-            ))}
+          <div className="event-groups">
+            <section className="event-group" aria-labelledby="work-title">
+              <div className="section-heading">
+                <h2 id="work-title">School activities</h2>
+                <p>{schoolEvents.length} {schoolEvents.length === 1 ? "story" : "stories"}</p>
+              </div>
+              {schoolEvents.length ? <EventGrid items={schoolEvents} /> : <p className="group-empty">School stories will appear here.</p>}
+            </section>
+
+            <section className="event-group event-group-outside" aria-labelledby="outside-work-title">
+              <div className="section-heading">
+                <h2 id="outside-work-title">Outside-of-school activities</h2>
+                <p>{outsideSchoolEvents.length} {outsideSchoolEvents.length === 1 ? "story" : "stories"}</p>
+              </div>
+              {outsideSchoolEvents.length ? <EventGrid items={outsideSchoolEvents} /> : <p className="group-empty">Outside-school stories will appear here.</p>}
+            </section>
           </div>
         ) : (
           <div className="empty-archive">
@@ -61,8 +80,8 @@ export default async function Home() {
       <section className="about-section" id="about">
         <p className="section-label">About</p>
         <div>
-          <h2>Photography helps me notice what a busy day leaves behind.</h2>
-          <p>I photograph events, ordinary places, and the small gestures between people. This is a growing record of how I see.</p>
+          <h2>I photograph the energy around an event—not only the moment on stage.</h2>
+          <p>My work moves between school life, performances, trips, and cosplay gatherings. I look for gestures, expressions, and quiet transitions that reveal how a shared moment feels.</p>
         </div>
       </section>
 

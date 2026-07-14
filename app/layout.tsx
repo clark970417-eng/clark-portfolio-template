@@ -14,7 +14,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const ogImage = `${protocol}://${host}/og.png`;
   return {
     title: { default: "Clark Lo — Photography", template: "%s — Clark Lo" },
-    description: "A growing archive of events and everyday moments photographed by Clark Lo in Taiwan.",
+    description: "School life, performances, trips, cosplay gatherings, and the quiet moments between them—photographed by Taiwan-based student photographer Clark Lo.",
     icons: { icon: "/favicon.svg", shortcut: "/favicon.svg" },
     openGraph: { title: "Clark Lo — Photography", description: "I keep the moments that usually pass.", type: "website", images:[{url:ogImage,width:1200,height:630,alt:"Clark Lo photography portfolio"}] },
     twitter: { card: "summary_large_image", title: "Clark Lo — Photography", description: "I keep the moments that usually pass.", images:[ogImage] },

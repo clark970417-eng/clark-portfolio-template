@@ -4,6 +4,7 @@ export const events = sqliteTable("events", {
   id: text("id").primaryKey(),
   title: text("title").notNull(),
   slug: text("slug").notNull().unique(),
+  category: text("category", { enum: ["school", "outside-school"] }).notNull().default("school"),
   status: text("status", { enum: ["draft", "published"] }).notNull().default("draft"),
   position: integer("position").notNull().default(0),
   createdAt: integer("created_at").notNull(),
@@ -19,4 +20,12 @@ export const photos = sqliteTable("photos", {
   height: integer("height"),
   position: integer("position").notNull().default(0),
   createdAt: integer("created_at").notNull(),
+});
+
+export const verificationCodes = sqliteTable("verification_codes", {
+  id: text("id").primaryKey(),
+  email: text("email").notNull(),
+  code: text("code").notNull(),
+  expiresAt: integer("expires_at").notNull(),
+  verified: integer("verified").notNull().default(0),
 });

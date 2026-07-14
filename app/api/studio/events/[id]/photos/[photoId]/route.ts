@@ -1,0 +1,25 @@
+import { env } from "cloudflare:workers";
+import { isAdmin } from "../../../../auth";
+import { ensureSchema } from "../../../../../../../db/ensure-schema";
+
+export async function PATCH(request:Request,{params}:{params:Promise<{id:string;photoId:string}>}){
+  if(!(await isAdmin()))return Response.json({error:"Unauthorized"},{status:401});
+  await ensureSchema(env.DB);
+  const {id,photoId}=await params;
+  const body=await request.json().catch(()=>null);
+  if(typeof body?.alt!=="string")return Response.json({error:"Invalid photo description."},{status:400});
+  const alt=body.alt.trim().slice(0,240);
+  await env.DB.prepare("UPDATE photos SET alt=? WHERE id=? AND event_id=?").bind(alt,photoId,id).run();
+  return Response.json({ok:true,alt});
+}
+
+export async function DELETE(_request:Request,{params}:{params:Promise<{id:string;photoId:string}>}){
+  if(!(await isAdmin()))return Response.json({error:"Unauthorized"},{status:401});
+  await ensureSchema(env.DB);
+  const {id,photoId}=await params;
+  const photo=await env.DB.prepare("SELECT object_key FROM photos WHERE id=? AND event_id=? LIMIT 1").bind(photoId,id).first<{object_key:string}>();
+  if(!photo)return Response.json({error:"Photo not found."},{status:404});
+  await env.PHOTOS.delete(photo.object_key);
+  await env.DB.prepare("DELETE FROM photos WHERE id=? AND event_id=?").bind(photoId,id).run();
+  return Response.json({ok:true});
+}

@@ -2,6 +2,7 @@ CREATE TABLE `events` (
   `id` text PRIMARY KEY NOT NULL,
   `title` text NOT NULL,
   `slug` text NOT NULL,
+  `category` text DEFAULT 'school' NOT NULL,
   `status` text DEFAULT 'draft' NOT NULL,
   `position` integer DEFAULT 0 NOT NULL,
   `created_at` integer NOT NULL,
@@ -22,3 +23,11 @@ CREATE TABLE `photos` (
 );
 --> statement-breakpoint
 CREATE INDEX `photos_event_position_idx` ON `photos` (`event_id`, `position`);
+--> statement-breakpoint
+CREATE TABLE `verification_codes` (
+  `id` text PRIMARY KEY NOT NULL,
+  `email` text NOT NULL,
+  `code` text NOT NULL,
+  `expires_at` integer NOT NULL,
+  `verified` integer DEFAULT 0 NOT NULL
+);
