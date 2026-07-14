@@ -25,6 +25,7 @@ export function Studio({ initialEvents, signOutPath }: { initialEvents: EventIte
   const [editingTitleId, setEditingTitleId] = useState<string | null>(null);
   const [titleDraft, setTitleDraft] = useState("");
   const [confirmPhotoId, setConfirmPhotoId] = useState<string | null>(null);
+  const [editingPhotoId, setEditingPhotoId] = useState<string | null>(null);
   const [lightbox, setLightbox] = useState<{ eventId: string; photoId: string } | null>(null);
   const [cropEditor, setCropEditor] = useState<{ eventId: string; photoId: string; x: number; y: number } | null>(null);
   const cropDrag = useRef<{ pointerId: number; clientX: number; clientY: number; x: number; y: number } | null>(null);
@@ -175,6 +176,7 @@ export function Studio({ initialEvents, signOutPath }: { initialEvents: EventIte
   async function togglePhotos(eventId: string) {
     if (openEventId === eventId) {
       setLightbox(null);
+      setEditingPhotoId(null);
       return setOpenEventId(null);
     }
     setOpenEventId(eventId);
@@ -335,6 +337,7 @@ export function Studio({ initialEvents, signOutPath }: { initialEvents: EventIte
         setPhotos((current) => ({ ...current, [eventId]: (current[eventId] ?? []).filter((photo) => photo.id !== photoId) }));
         setEvents((current) => current.map((item) => item.id === eventId ? { ...item, photoCount: Math.max(0, item.photoCount - 1), ...(item.coverPhotoId === photoId ? { coverPhotoId: null, coverX: 50, coverY: 50 } : {}) } : item));
         if (lightbox?.photoId === photoId) setLightbox(null);
+        if (editingPhotoId === photoId) setEditingPhotoId(null);
         setConfirmPhotoId(null);
         setMessage("Photo deleted.");
       } else setMessage("The photo could not be deleted.");
@@ -386,7 +389,7 @@ export function Studio({ initialEvents, signOutPath }: { initialEvents: EventIte
 
             {openEventId === item.id && (
               <div className="photo-manager">
-                <div className="photo-manager-heading"><div><p>Sequence / cover</p><h3>{item.title}</h3></div><p>A tighter two-column edit. Choose a cover, refine its crop, then arrange the story.</p></div>
+                <div className="photo-manager-heading"><div><p>Sequence / cover</p><h3>{item.title}</h3></div><p>A compact masonry edit. Open details only when you need to arrange, describe, or delete a photo.</p></div>
                 {(photos[item.id] ?? []).length ? (
                   <div className="photo-editor-grid">
                     {(photos[item.id] ?? []).map((photo, photoIndex) => {
@@ -398,10 +401,15 @@ export function Studio({ initialEvents, signOutPath }: { initialEvents: EventIte
                           <span>{isCover ? "Cover" : String(photoIndex + 1).padStart(2, "0")}</span>
                           <strong>View detail</strong>
                         </button>
-                        <div className={`photo-cover-action${isCover ? " is-cover" : ""}`}>{isCover ? <><span>Current cover</span><button onClick={() => openCropEditor(item, photo)} disabled={busy}>Edit crop ↗</button></> : <button onClick={() => setCover(item.id, photo)} disabled={busy}>Set as cover</button>}</div>
-                        <div className="photo-editor-actions"><button aria-label={`Move photo ${photoIndex + 1} earlier`} onClick={() => movePhoto(item.id, photoIndex, -1)} disabled={busy || photoIndex === 0}>← Earlier</button><button aria-label={`Move photo ${photoIndex + 1} later`} onClick={() => movePhoto(item.id, photoIndex, 1)} disabled={busy || photoIndex === (photos[item.id]?.length ?? 0) - 1}>Later →</button></div>
-                        <label>Description<input value={photo.alt} onChange={(event) => editPhotoAlt(item.id, photo.id, event.target.value)} placeholder="What is happening in this photograph?" /></label>
-                        <div className="photo-editor-footer"><button onClick={() => savePhotoAlt(item.id, photo)} disabled={busy}>Save description</button>{confirmPhotoId === photo.id ? <span><button className="studio-delete" onClick={() => deletePhoto(item.id, photo.id)} disabled={busy}>Confirm delete</button><button onClick={() => setConfirmPhotoId(null)}>Cancel</button></span> : <button className="studio-delete" onClick={() => setConfirmPhotoId(photo.id)}>Delete photo</button>}</div>
+                        <div className={`photo-card-toolbar${isCover ? " is-cover" : ""}`}>
+                          <div>{isCover ? <><span>Cover</span><button onClick={() => openCropEditor(item, photo)} disabled={busy}>Edit crop</button></> : <button onClick={() => setCover(item.id, photo)} disabled={busy}>Set cover</button>}</div>
+                          <button onClick={() => setEditingPhotoId(editingPhotoId === photo.id ? null : photo.id)} aria-expanded={editingPhotoId === photo.id}>{editingPhotoId === photo.id ? "Close" : "Edit"} {editingPhotoId === photo.id ? "↑" : "↓"}</button>
+                        </div>
+                        {editingPhotoId === photo.id && <div className="photo-card-editor">
+                          <div className="photo-editor-actions"><button aria-label={`Move photo ${photoIndex + 1} earlier`} onClick={() => movePhoto(item.id, photoIndex, -1)} disabled={busy || photoIndex === 0}>← Earlier</button><button aria-label={`Move photo ${photoIndex + 1} later`} onClick={() => movePhoto(item.id, photoIndex, 1)} disabled={busy || photoIndex === (photos[item.id]?.length ?? 0) - 1}>Later →</button></div>
+                          <label>Description<input value={photo.alt} onChange={(event) => editPhotoAlt(item.id, photo.id, event.target.value)} placeholder="What is happening in this photograph?" /></label>
+                          <div className="photo-editor-footer"><button onClick={() => savePhotoAlt(item.id, photo)} disabled={busy}>Save description</button>{confirmPhotoId === photo.id ? <span><button className="studio-delete" onClick={() => deletePhoto(item.id, photo.id)} disabled={busy}>Confirm delete</button><button onClick={() => setConfirmPhotoId(null)}>Cancel</button></span> : <button className="studio-delete" onClick={() => setConfirmPhotoId(photo.id)}>Delete photo</button>}</div>
+                        </div>}
                       </article>
                     )})}
                   </div>

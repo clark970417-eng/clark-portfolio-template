@@ -34,6 +34,7 @@ test("studio protects writes and strips image metadata client-side",async()=>{
   assert.match(studio,/Remove from portfolio/);
   assert.match(studio,/Drag photo to reframe/);
   assert.match(studio,/Save crop/);
+  assert.match(studio,/compact masonry edit/);
   assert.match(auth,/clark970417@gmail\.com/);
   assert.match(upload,/await isAdmin\(\)/);
 });
