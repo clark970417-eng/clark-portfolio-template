@@ -86,7 +86,7 @@ export function Studio({ initialEvents, signOutPath }: { initialEvents: EventIte
         setEvents((current) => action === "delete"
           ? current.filter((item) => item.id !== id)
           : current.map((item) => item.id === id ? { ...item, status: action === "publish" ? "published" : "draft" } : item));
-        setMessage(action === "delete" ? "Event deleted." : action === "publish" ? "Published." : "Moved to draft.");
+        setMessage(action === "delete" ? "Event deleted." : action === "publish" ? "Portfolio updated." : "Removed from portfolio.");
       } else setMessage("The event could not be updated.");
     } finally {
       setBusy(false);
@@ -303,7 +303,10 @@ export function Studio({ initialEvents, signOutPath }: { initialEvents: EventIte
               <select className="studio-category" aria-label={`${item.title} category`} value={item.category} onChange={(event) => updateCategory(item.id, event.target.value as EventCategory)} disabled={busy}><option value="school">School</option><option value="outside-school">Outside school</option></select>
               <button className="studio-manage" onClick={() => togglePhotos(item.id)} aria-expanded={openEventId === item.id}>{openEventId === item.id ? "Close photos" : "Manage photos"}</button>
               <label className="studio-upload">Add photos<input type="file" accept="image/jpeg,image/png,image/webp" multiple onChange={(event) => upload(item.id, event.target.files)} /></label>
-              <button onClick={() => updateStatus(item.id, item.status === "published" ? "draft" : "publish")} disabled={busy}>{item.status === "published" ? "Unpublish" : "Publish"}</button>
+              <div className="studio-publish-actions">
+                <button className="studio-update" onClick={() => updateStatus(item.id, "publish")} disabled={busy}>Update portfolio <span aria-hidden="true">↗</span></button>
+                {item.status === "published" && <button className="studio-remove" onClick={() => updateStatus(item.id, "draft")} disabled={busy}>Remove from portfolio</button>}
+              </div>
               <button className="studio-delete" onClick={() => updateStatus(item.id, "delete")} disabled={busy}>Delete</button>
             </div>
 
