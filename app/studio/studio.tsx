@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, PointerEvent as ReactPointerEvent, useEffect, useRef, useState } from "react";
 import smartcrop from "smartcrop";
 
 type EventCategory = "school" | "outside-school";
@@ -26,6 +26,8 @@ export function Studio({ initialEvents, signOutPath }: { initialEvents: EventIte
   const [titleDraft, setTitleDraft] = useState("");
   const [confirmPhotoId, setConfirmPhotoId] = useState<string | null>(null);
   const [lightbox, setLightbox] = useState<{ eventId: string; photoId: string } | null>(null);
+  const [cropEditor, setCropEditor] = useState<{ eventId: string; photoId: string; x: number; y: number } | null>(null);
+  const cropDrag = useRef<{ pointerId: number; clientX: number; clientY: number; x: number; y: number } | null>(null);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
 
@@ -33,12 +35,20 @@ export function Studio({ initialEvents, signOutPath }: { initialEvents: EventIte
   const lightboxIndex = lightbox ? lightboxPhotos.findIndex((photo) => photo.id === lightbox.photoId) : -1;
   const lightboxPhoto = lightboxIndex >= 0 ? lightboxPhotos[lightboxIndex] : null;
   const lightboxEvent = lightbox ? events.find((item) => item.id === lightbox.eventId) : null;
+  const cropPhoto = cropEditor ? (photos[cropEditor.eventId] ?? []).find((photo) => photo.id === cropEditor.photoId) : null;
+  const cropEvent = cropEditor ? events.find((item) => item.id === cropEditor.eventId) : null;
+  const overlayOpen = Boolean(lightbox || cropEditor);
+
+  useEffect(() => {
+    if (!overlayOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = previousOverflow; };
+  }, [overlayOpen]);
 
   useEffect(() => {
     const activeLightbox = lightbox;
     if (!activeLightbox) return;
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") setLightbox(null);
       if (event.key === "ArrowLeft" && lightboxIndex > 0) {
@@ -49,11 +59,17 @@ export function Studio({ initialEvents, signOutPath }: { initialEvents: EventIte
       }
     }
     window.addEventListener("keydown", handleKeyDown);
-    return () => {
-      document.body.style.overflow = previousOverflow;
-      window.removeEventListener("keydown", handleKeyDown);
-    };
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, [lightbox, lightboxIndex, lightboxPhotos]);
+
+  useEffect(() => {
+    if (!cropEditor) return;
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") setCropEditor(null);
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [cropEditor]);
 
   async function create(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -229,10 +245,68 @@ export function Studio({ initialEvents, signOutPath }: { initialEvents: EventIte
       const data = await response.json().catch(() => ({}));
       if (response.ok) {
         setEvents((current) => current.map((item) => item.id === eventId ? { ...item, coverPhotoId: data.coverPhotoId, coverX: data.coverX, coverY: data.coverY } : item));
-        setMessage("Cover selected. The subject-aware crop is ready, and photo order is unchanged.");
+        setCropEditor({ eventId, photoId: photo.id, x: data.coverX, y: data.coverY });
+        setMessage("Cover selected. Adjust the crop if needed; photo order is unchanged.");
       } else setMessage(data.error ?? "The cover could not be changed.");
     } catch {
       setMessage("The cover could not be analyzed. Try again.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function openCropEditor(item: EventItem, photo: PhotoItem) {
+    setLightbox(null);
+    setCropEditor({ eventId: item.id, photoId: photo.id, x: item.coverX ?? 50, y: item.coverY ?? 50 });
+  }
+
+  function startCropDrag(event: ReactPointerEvent<HTMLDivElement>) {
+    if (!cropEditor) return;
+    event.currentTarget.setPointerCapture(event.pointerId);
+    cropDrag.current = { pointerId: event.pointerId, clientX: event.clientX, clientY: event.clientY, x: cropEditor.x, y: cropEditor.y };
+  }
+
+  function moveCrop(event: ReactPointerEvent<HTMLDivElement>) {
+    const drag = cropDrag.current;
+    if (!cropEditor || !drag || drag.pointerId !== event.pointerId) return;
+    const bounds = event.currentTarget.getBoundingClientRect();
+    const x = clamp(drag.x - ((event.clientX - drag.clientX) / bounds.width) * 100);
+    const y = clamp(drag.y - ((event.clientY - drag.clientY) / bounds.height) * 100);
+    setCropEditor({ ...cropEditor, x, y });
+  }
+
+  function stopCropDrag(event: ReactPointerEvent<HTMLDivElement>) {
+    if (cropDrag.current?.pointerId === event.pointerId) cropDrag.current = null;
+  }
+
+  async function resetSmartCrop() {
+    if (!cropEditor || !cropPhoto) return;
+    setBusy(true);
+    setMessage("Finding the best crop around the subject…");
+    try {
+      const focus = await findCoverFocus(cropPhoto.url);
+      setCropEditor({ ...cropEditor, x: focus.x, y: focus.y });
+      setMessage("Smart crop preview ready. Save it when the framing looks right.");
+    } catch {
+      setMessage("The cover could not be analyzed. Adjust it manually.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function saveCoverCrop() {
+    if (!cropEditor) return;
+    setBusy(true);
+    try {
+      const response = await fetch(`/api/studio/events/${cropEditor.eventId}`, { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ coverPhotoId: cropEditor.photoId, coverX: cropEditor.x, coverY: cropEditor.y }) });
+      const data = await response.json().catch(() => ({}));
+      if (response.ok) {
+        setEvents((current) => current.map((item) => item.id === cropEditor.eventId ? { ...item, coverPhotoId: data.coverPhotoId, coverX: data.coverX, coverY: data.coverY } : item));
+        setCropEditor(null);
+        setMessage("Cover crop saved to the portfolio.");
+      } else setMessage(data.error ?? "The cover crop could not be saved.");
+    } catch {
+      setMessage("The cover crop could not be saved.");
     } finally {
       setBusy(false);
     }
@@ -312,7 +386,7 @@ export function Studio({ initialEvents, signOutPath }: { initialEvents: EventIte
 
             {openEventId === item.id && (
               <div className="photo-manager">
-                <div className="photo-manager-heading"><div><p>Contact sheet</p><h3>{item.title}</h3></div><p>Choose any photo as the cover. Its position will not change.</p></div>
+                <div className="photo-manager-heading"><div><p>Sequence / cover</p><h3>{item.title}</h3></div><p>A tighter two-column edit. Choose a cover, refine its crop, then arrange the story.</p></div>
                 {(photos[item.id] ?? []).length ? (
                   <div className="photo-editor-grid">
                     {(photos[item.id] ?? []).map((photo, photoIndex) => {
@@ -324,7 +398,7 @@ export function Studio({ initialEvents, signOutPath }: { initialEvents: EventIte
                           <span>{isCover ? "Cover" : String(photoIndex + 1).padStart(2, "0")}</span>
                           <strong>View detail</strong>
                         </button>
-                        <div className={`photo-cover-action${isCover ? " is-cover" : ""}`}>{isCover ? <span>Current cover{item.coverPhotoId ? " · smart crop" : ""}</span> : <button onClick={() => setCover(item.id, photo)} disabled={busy}>Set as cover</button>}</div>
+                        <div className={`photo-cover-action${isCover ? " is-cover" : ""}`}>{isCover ? <><span>Current cover</span><button onClick={() => openCropEditor(item, photo)} disabled={busy}>Edit crop ↗</button></> : <button onClick={() => setCover(item.id, photo)} disabled={busy}>Set as cover</button>}</div>
                         <div className="photo-editor-actions"><button aria-label={`Move photo ${photoIndex + 1} earlier`} onClick={() => movePhoto(item.id, photoIndex, -1)} disabled={busy || photoIndex === 0}>← Earlier</button><button aria-label={`Move photo ${photoIndex + 1} later`} onClick={() => movePhoto(item.id, photoIndex, 1)} disabled={busy || photoIndex === (photos[item.id]?.length ?? 0) - 1}>Later →</button></div>
                         <label>Description<input value={photo.alt} onChange={(event) => editPhotoAlt(item.id, photo.id, event.target.value)} placeholder="What is happening in this photograph?" /></label>
                         <div className="photo-editor-footer"><button onClick={() => savePhotoAlt(item.id, photo)} disabled={busy}>Save description</button>{confirmPhotoId === photo.id ? <span><button className="studio-delete" onClick={() => deletePhoto(item.id, photo.id)} disabled={busy}>Confirm delete</button><button onClick={() => setConfirmPhotoId(null)}>Cancel</button></span> : <button className="studio-delete" onClick={() => setConfirmPhotoId(photo.id)}>Delete photo</button>}</div>
@@ -351,6 +425,29 @@ export function Studio({ initialEvents, signOutPath }: { initialEvents: EventIte
               <button type="button" className="photo-lightbox-nav is-next" aria-label="Next photo" disabled={lightboxIndex === lightboxPhotos.length - 1} onClick={() => setLightbox({ eventId: lightbox.eventId, photoId: lightboxPhotos[lightboxIndex + 1].id })}>→</button>
             </div>
             <footer><p>{lightboxPhoto.alt || "No description yet."}</p><span>Use ← → keys to browse · Esc to close</span></footer>
+          </div>
+        </div>
+      )}
+      {cropEditor && cropPhoto && cropEvent && (
+        <div className="cover-crop-dialog" role="dialog" aria-modal="true" aria-label={`Edit cover crop for ${cropEvent.title}`} onClick={() => setCropEditor(null)}>
+          <div className="cover-crop-panel" onClick={(event) => event.stopPropagation()}>
+            <header><div><span>Cover crop</span><h2>{cropEvent.title}</h2></div><button type="button" onClick={() => setCropEditor(null)} aria-label="Close cover crop editor">Close ×</button></header>
+            <div className="cover-crop-workspace">
+              <div className="cover-crop-main">
+                <div className="cover-crop-viewport" onPointerDown={startCropDrag} onPointerMove={moveCrop} onPointerUp={stopCropDrag} onPointerCancel={stopCropDrag}>
+                  <img src={cropPhoto.url} alt="Cover crop preview" draggable={false} style={{ objectPosition: `${cropEditor.x}% ${cropEditor.y}%` }} />
+                  <span>Drag photo to reframe</span>
+                </div>
+              </div>
+              <aside>
+                <p>Portrait card preview</p>
+                <div className="cover-crop-portrait"><img src={cropPhoto.url} alt="Portrait cover preview" style={{ objectPosition: `${cropEditor.x}% ${cropEditor.y}%` }} /></div>
+                <label>Horizontal <output>{Math.round(cropEditor.x)}%</output><input type="range" min="0" max="100" value={cropEditor.x} onChange={(event) => setCropEditor({ ...cropEditor, x: Number(event.target.value) })} /></label>
+                <label>Vertical <output>{Math.round(cropEditor.y)}%</output><input type="range" min="0" max="100" value={cropEditor.y} onChange={(event) => setCropEditor({ ...cropEditor, y: Number(event.target.value) })} /></label>
+                <button className="cover-crop-smart" type="button" onClick={resetSmartCrop} disabled={busy}>Use smart crop</button>
+              </aside>
+            </div>
+            <footer><p>The original photo stays untouched. Only the portfolio cover framing changes.</p><div><button type="button" onClick={() => setCropEditor(null)}>Cancel</button><button className="cover-crop-save" type="button" onClick={saveCoverCrop} disabled={busy}>Save crop ↗</button></div></footer>
           </div>
         </div>
       )}
@@ -403,4 +500,8 @@ async function findCoverFocus(url: string): Promise<{ x: number; y: number }> {
     x: Math.round(((crop.x + crop.width / 2) / image.naturalWidth) * 100),
     y: Math.round(((crop.y + crop.height / 2) / image.naturalHeight) * 100),
   };
+}
+
+function clamp(value: number) {
+  return Math.max(0, Math.min(100, Math.round(value)));
 }
