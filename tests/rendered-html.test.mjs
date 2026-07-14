@@ -11,8 +11,10 @@ test("portfolio source contains the finished public experience", async()=>{
   ]);
   assert.match(layout,/Clark Lo — Photography/);
   assert.match(page,/I keep the moments/);
-  assert.match(page,/Selected events/);
-  assert.match(page,/photography enthusiast/);
+  assert.match(page,/School activities/);
+  assert.match(page,/Outside-of-school activities/);
+  assert.match(page,/student photographer/);
+  assert.match(page,/objectPosition/);
   assert.match(css,/prefers-reduced-motion/);
   assert.doesNotMatch(page,/SkeletonPreview|codex-preview/);
   assert.doesNotMatch(pkg,/react-loading-skeleton/);
@@ -26,6 +28,8 @@ test("studio protects writes and strips image metadata client-side",async()=>{
   ]);
   assert.match(studio,/canvas\.toBlob/);
   assert.match(studio,/image\/webp/);
+  assert.match(studio,/Finding the best crop around the subject/);
+  assert.match(studio,/coverPhotoId/);
   assert.match(auth,/clark970417@gmail\.com/);
   assert.match(upload,/await isAdmin\(\)/);
 });

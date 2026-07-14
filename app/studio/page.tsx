@@ -20,11 +20,11 @@ export default async function StudioPage() {
     }
   }
 
-  let events: { id:string; title:string; slug:string; category:"school"|"outside-school"; status:string; position:number; photoCount:number }[] = [];
+  let events: { id:string; title:string; slug:string; category:"school"|"outside-school"; status:string; coverPhotoId:string|null; coverX:number; coverY:number; position:number; photoCount:number }[] = [];
   if (env.DB) {
     try {
       await ensureSchema(env.DB);
-      const result = await env.DB.prepare("SELECT e.id, e.title, e.slug, e.category, e.status, e.position, COUNT(p.id) AS photoCount FROM events e LEFT JOIN photos p ON p.event_id=e.id GROUP BY e.id ORDER BY e.position ASC, e.created_at DESC").all<typeof events[number]>();
+      const result = await env.DB.prepare("SELECT e.id, e.title, e.slug, e.category, e.status, e.cover_photo_id AS coverPhotoId, e.cover_x AS coverX, e.cover_y AS coverY, e.position, COUNT(p.id) AS photoCount FROM events e LEFT JOIN photos p ON p.event_id=e.id GROUP BY e.id ORDER BY e.position ASC, e.created_at DESC").all<typeof events[number]>();
       events = result.results;
     } catch { /* first deployment runs migrations before use */ }
   }

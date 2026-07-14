@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
+import smartcrop from "smartcrop";
 
 type EventCategory = "school" | "outside-school";
 type EventItem = {
@@ -9,6 +10,9 @@ type EventItem = {
   slug: string;
   category: EventCategory;
   status: string;
+  coverPhotoId: string | null;
+  coverX: number;
+  coverY: number;
   position: number;
   photoCount: number;
 };
@@ -31,16 +35,17 @@ export function Studio({ initialEvents, signOutPath }: { initialEvents: EventIte
   const lightboxEvent = lightbox ? events.find((item) => item.id === lightbox.eventId) : null;
 
   useEffect(() => {
-    if (!lightbox) return;
+    const activeLightbox = lightbox;
+    if (!activeLightbox) return;
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") setLightbox(null);
       if (event.key === "ArrowLeft" && lightboxIndex > 0) {
-        setLightbox({ eventId: lightbox.eventId, photoId: lightboxPhotos[lightboxIndex - 1].id });
+        setLightbox({ eventId: activeLightbox.eventId, photoId: lightboxPhotos[lightboxIndex - 1].id });
       }
       if (event.key === "ArrowRight" && lightboxIndex < lightboxPhotos.length - 1) {
-        setLightbox({ eventId: lightbox.eventId, photoId: lightboxPhotos[lightboxIndex + 1].id });
+        setLightbox({ eventId: activeLightbox.eventId, photoId: lightboxPhotos[lightboxIndex + 1].id });
       }
     }
     window.addEventListener("keydown", handleKeyDown);
@@ -205,7 +210,7 @@ export function Studio({ initialEvents, signOutPath }: { initialEvents: EventIte
     setBusy(true);
     try {
       const response = await fetch(`/api/studio/events/${eventId}/photos`, { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ ids: next.map((photo) => photo.id) }) });
-      if (response.ok) setMessage("Photo order saved. The first photo is the cover.");
+      if (response.ok) setMessage("Photo order saved. The cover stays unchanged.");
       else {
         setPhotos((current) => ({ ...current, [eventId]: list }));
         setMessage("The photo order could not be saved.");
@@ -215,19 +220,19 @@ export function Studio({ initialEvents, signOutPath }: { initialEvents: EventIte
     }
   }
 
-  async function setCover(eventId: string, index: number) {
-    const list = photos[eventId] ?? [];
-    if (index <= 0 || index >= list.length) return;
-    const next = [list[index], ...list.slice(0, index), ...list.slice(index + 1)];
-    setPhotos((current) => ({ ...current, [eventId]: next }));
+  async function setCover(eventId: string, photo: PhotoItem) {
     setBusy(true);
     try {
-      const response = await fetch(`/api/studio/events/${eventId}/photos`, { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ ids: next.map((photo) => photo.id) }) });
-      if (response.ok) setMessage("Cover selected. It is now photo 01.");
-      else {
-        setPhotos((current) => ({ ...current, [eventId]: list }));
-        setMessage("The cover could not be changed.");
-      }
+      setMessage("Finding the best crop around the subject…");
+      const focus = await findCoverFocus(photo.url);
+      const response = await fetch(`/api/studio/events/${eventId}`, { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ coverPhotoId: photo.id, coverX: focus.x, coverY: focus.y }) });
+      const data = await response.json().catch(() => ({}));
+      if (response.ok) {
+        setEvents((current) => current.map((item) => item.id === eventId ? { ...item, coverPhotoId: data.coverPhotoId, coverX: data.coverX, coverY: data.coverY } : item));
+        setMessage("Cover selected. The subject-aware crop is ready, and photo order is unchanged.");
+      } else setMessage(data.error ?? "The cover could not be changed.");
+    } catch {
+      setMessage("The cover could not be analyzed. Try again.");
     } finally {
       setBusy(false);
     }
@@ -254,7 +259,7 @@ export function Studio({ initialEvents, signOutPath }: { initialEvents: EventIte
       const response = await fetch(`/api/studio/events/${eventId}/photos/${photoId}`, { method: "DELETE" });
       if (response.ok) {
         setPhotos((current) => ({ ...current, [eventId]: (current[eventId] ?? []).filter((photo) => photo.id !== photoId) }));
-        setEvents((current) => current.map((item) => item.id === eventId ? { ...item, photoCount: Math.max(0, item.photoCount - 1) } : item));
+        setEvents((current) => current.map((item) => item.id === eventId ? { ...item, photoCount: Math.max(0, item.photoCount - 1), ...(item.coverPhotoId === photoId ? { coverPhotoId: null, coverX: 50, coverY: 50 } : {}) } : item));
         if (lightbox?.photoId === photoId) setLightbox(null);
         setConfirmPhotoId(null);
         setMessage("Photo deleted.");
@@ -304,22 +309,24 @@ export function Studio({ initialEvents, signOutPath }: { initialEvents: EventIte
 
             {openEventId === item.id && (
               <div className="photo-manager">
-                <div className="photo-manager-heading"><div><p>Contact sheet</p><h3>{item.title}</h3></div><p>Move a photo to position 01 to use it as the cover.</p></div>
+                <div className="photo-manager-heading"><div><p>Contact sheet</p><h3>{item.title}</h3></div><p>Choose any photo as the cover. Its position will not change.</p></div>
                 {(photos[item.id] ?? []).length ? (
                   <div className="photo-editor-grid">
-                    {(photos[item.id] ?? []).map((photo, photoIndex) => (
+                    {(photos[item.id] ?? []).map((photo, photoIndex) => {
+                      const isCover = item.coverPhotoId ? item.coverPhotoId === photo.id : photoIndex === 0;
+                      return (
                       <article className="photo-editor-card" key={photo.id}>
                         <button className="photo-editor-image" type="button" onClick={() => setLightbox({ eventId: item.id, photoId: photo.id })} aria-label={`Open photo ${photoIndex + 1} in full view`}>
                           <img src={photo.url} alt="" />
-                          <span>{photoIndex === 0 ? "Cover" : String(photoIndex + 1).padStart(2, "0")}</span>
+                          <span>{isCover ? "Cover" : String(photoIndex + 1).padStart(2, "0")}</span>
                           <strong>View detail</strong>
                         </button>
-                        <div className={`photo-cover-action${photoIndex === 0 ? " is-cover" : ""}`}>{photoIndex === 0 ? <span>Current cover</span> : <button onClick={() => setCover(item.id, photoIndex)} disabled={busy}>Set as cover</button>}</div>
+                        <div className={`photo-cover-action${isCover ? " is-cover" : ""}`}>{isCover ? <span>Current cover{item.coverPhotoId ? " · smart crop" : ""}</span> : <button onClick={() => setCover(item.id, photo)} disabled={busy}>Set as cover</button>}</div>
                         <div className="photo-editor-actions"><button aria-label={`Move photo ${photoIndex + 1} earlier`} onClick={() => movePhoto(item.id, photoIndex, -1)} disabled={busy || photoIndex === 0}>← Earlier</button><button aria-label={`Move photo ${photoIndex + 1} later`} onClick={() => movePhoto(item.id, photoIndex, 1)} disabled={busy || photoIndex === (photos[item.id]?.length ?? 0) - 1}>Later →</button></div>
                         <label>Description<input value={photo.alt} onChange={(event) => editPhotoAlt(item.id, photo.id, event.target.value)} placeholder="What is happening in this photograph?" /></label>
                         <div className="photo-editor-footer"><button onClick={() => savePhotoAlt(item.id, photo)} disabled={busy}>Save description</button>{confirmPhotoId === photo.id ? <span><button className="studio-delete" onClick={() => deletePhoto(item.id, photo.id)} disabled={busy}>Confirm delete</button><button onClick={() => setConfirmPhotoId(null)}>Cancel</button></span> : <button className="studio-delete" onClick={() => setConfirmPhotoId(photo.id)}>Delete photo</button>}</div>
                       </article>
-                    ))}
+                    )})}
                   </div>
                 ) : <p className="photo-manager-empty">No photos yet. Choose “Add photos” to start this story.</p>}
               </div>
@@ -380,4 +387,17 @@ async function preparePhoto(file: File): Promise<Blob> {
 
 function canvasToBlob(canvas: HTMLCanvasElement, quality: number): Promise<Blob> {
   return new Promise((resolve, reject) => canvas.toBlob((blob) => blob ? resolve(blob) : reject(new Error("Conversion failed")), "image/webp", quality));
+}
+
+async function findCoverFocus(url: string): Promise<{ x: number; y: number }> {
+  const image = new Image();
+  image.crossOrigin = "anonymous";
+  image.src = url;
+  await image.decode();
+  const result = await smartcrop.crop(image, { width: 1000, height: 1000 });
+  const crop = result.topCrop;
+  return {
+    x: Math.round(((crop.x + crop.width / 2) / image.naturalWidth) * 100),
+    y: Math.round(((crop.y + crop.height / 2) / image.naturalHeight) * 100),
+  };
 }

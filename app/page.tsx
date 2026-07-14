@@ -15,7 +15,7 @@ export default async function Home() {
         {items.map((event, index) => (
           <Link className={`event-card event-card-${(index % 5) + 1}`} href={`/events/${event.slug}`} key={event.id}>
             <div className="event-image">
-              {event.coverUrl ? <img src={event.coverUrl} alt="" loading={index === 0 ? "eager" : "lazy"} decoding="async" fetchPriority={index === 0 ? "high" : "auto"} /> : <span className="empty-frame" />}
+              {event.coverUrl ? <img src={event.coverUrl} alt="" style={{ objectPosition: `${event.coverX}% ${event.coverY}%` }} loading={index === 0 ? "eager" : "lazy"} decoding="async" fetchPriority={index === 0 ? "high" : "auto"} /> : <span className="empty-frame" />}
               <span className="frame-corner frame-corner-a" />
               <span className="frame-corner frame-corner-b" />
             </div>

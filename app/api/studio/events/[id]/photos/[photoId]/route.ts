@@ -20,6 +20,9 @@ export async function DELETE(_request:Request,{params}:{params:Promise<{id:strin
   const photo=await env.DB.prepare("SELECT object_key FROM photos WHERE id=? AND event_id=? LIMIT 1").bind(photoId,id).first<{object_key:string}>();
   if(!photo)return Response.json({error:"Photo not found."},{status:404});
   await env.PHOTOS.delete(photo.object_key);
-  await env.DB.prepare("DELETE FROM photos WHERE id=? AND event_id=?").bind(photoId,id).run();
+  await env.DB.batch([
+    env.DB.prepare("UPDATE events SET cover_photo_id=NULL,cover_x=50,cover_y=50,updated_at=? WHERE id=? AND cover_photo_id=?").bind(Date.now(),id,photoId),
+    env.DB.prepare("DELETE FROM photos WHERE id=? AND event_id=?").bind(photoId,id),
+  ]);
   return Response.json({ok:true});
 }

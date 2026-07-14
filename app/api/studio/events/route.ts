@@ -11,7 +11,7 @@ export async function POST(request:Request){
   const category=String(form.get("category")??"school");if(!["school","outside-school"].includes(category))return Response.json({error:"Choose a valid category."},{status:400});
   const id=crypto.randomUUID(), now=Date.now(), slug=`${slugify(title)}-${id.slice(0,6)}`;
   await env.DB.prepare("INSERT INTO events (id,title,slug,category,status,position,created_at,updated_at) VALUES (?,?,?,?,'draft',(SELECT COALESCE(MAX(position),-1)+1 FROM events),?,?)").bind(id,title,slug,category,now,now).run();
-  return Response.json({event:{id,title,slug,category,status:"draft",position:999,photoCount:0}});
+  return Response.json({event:{id,title,slug,category,status:"draft",coverPhotoId:null,coverX:50,coverY:50,position:999,photoCount:0}});
 }
 
 export async function PATCH(request:Request){

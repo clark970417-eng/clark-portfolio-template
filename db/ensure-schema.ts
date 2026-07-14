@@ -8,6 +8,9 @@ export async function ensureSchema(db: D1) {
       slug text NOT NULL UNIQUE,
       category text DEFAULT 'school' NOT NULL,
       status text DEFAULT 'draft' NOT NULL,
+      cover_photo_id text,
+      cover_x integer DEFAULT 50 NOT NULL,
+      cover_y integer DEFAULT 50 NOT NULL,
       position integer DEFAULT 0 NOT NULL,
       created_at integer NOT NULL,
       updated_at integer NOT NULL
@@ -36,5 +39,14 @@ export async function ensureSchema(db: D1) {
   const eventColumns = await db.prepare("PRAGMA table_info(events)").all<{ name: string }>();
   if (!eventColumns.results.some((column) => column.name === "category")) {
     await db.prepare("ALTER TABLE events ADD COLUMN category text DEFAULT 'school' NOT NULL").run();
+  }
+  if (!eventColumns.results.some((column) => column.name === "cover_photo_id")) {
+    await db.prepare("ALTER TABLE events ADD COLUMN cover_photo_id text").run();
+  }
+  if (!eventColumns.results.some((column) => column.name === "cover_x")) {
+    await db.prepare("ALTER TABLE events ADD COLUMN cover_x integer DEFAULT 50 NOT NULL").run();
+  }
+  if (!eventColumns.results.some((column) => column.name === "cover_y")) {
+    await db.prepare("ALTER TABLE events ADD COLUMN cover_y integer DEFAULT 50 NOT NULL").run();
   }
 }
