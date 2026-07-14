@@ -1,47 +1,23 @@
+import { redirect } from "next/navigation";
 import { Studio } from "./studio";
-import { StudioLogin } from "./login";
 import { env } from "cloudflare:workers";
 import { headers } from "next/headers";
 import { ensureSchema } from "../../db/ensure-schema";
+import { chatGPTSignOutPath, getChatGPTUser } from "../chatgpt-auth";
 
 export const dynamic = "force-dynamic";
-
-function getCookieValue(cookieHeader: string, name: string): string | null {
-  const cookies = cookieHeader.split(";");
-  for (const cookie of cookies) {
-    const parts = cookie.trim().split("=");
-    if (parts[0] === name) return parts[1];
-  }
-  return null;
-}
+const ADMIN_EMAILS = new Set(["clark970417@gmail.com", "mary680616@gmail.com"]);
 
 export default async function StudioPage() {
   const host = (await headers()).get("host") ?? "";
   const isLocal = host.startsWith("localhost:") || host.startsWith("127.0.0.1:");
 
-  let authorized = false;
-  if (isLocal) {
-    authorized = true;
-  } else {
-    const cookieHeader = (await headers()).get("cookie") ?? "";
-    const sessionToken = getCookieValue(cookieHeader, "studio_session");
-    if (sessionToken && env.DB) {
-      try {
-        await ensureSchema(env.DB);
-        const session = await env.DB.prepare(
-          "SELECT id FROM verification_codes WHERE id = ? AND verified = 1 AND expires_at > ?"
-        )
-          .bind(sessionToken, Date.now())
-          .first();
-        if (session) {
-          authorized = true;
-        }
-      } catch { /* first deployment runs migrations before use */ }
+  if (!isLocal) {
+    const user = await getChatGPTUser();
+    if (!user) redirect("/signin-with-chatgpt?return_to=%2Fstudio");
+    if (!ADMIN_EMAILS.has(user.email.toLowerCase())) {
+      return <main className="studio-shell"><p>This studio belongs to Clark Lo.</p><a href={chatGPTSignOutPath("/")}>Sign out</a></main>;
     }
-  }
-
-  if (!authorized) {
-    return <StudioLogin />;
   }
 
   let events: { id:string; title:string; slug:string; category:"school"|"outside-school"; status:string; position:number; photoCount:number }[] = [];
@@ -52,5 +28,5 @@ export default async function StudioPage() {
       events = result.results;
     } catch { /* first deployment runs migrations before use */ }
   }
-  return <Studio initialEvents={events} signOutPath={isLocal ? "/" : "/api/studio/auth/signout"} />;
+  return <Studio initialEvents={events} signOutPath={isLocal ? "/" : chatGPTSignOutPath("/")} />;
 }
