@@ -92,6 +92,7 @@ export function Studio({ initialEvents, signOutPath }: { initialEvents: EventIte
   }
 
   async function updateStatus(id: string, action: "publish" | "draft" | "delete") {
+    if (action === "delete" && !confirm("Are you sure you want to delete this event and all of its photos?")) return;
     setBusy(true);
     try {
       const response = await fetch(`/api/studio/events/${id}`, {
@@ -346,6 +347,23 @@ export function Studio({ initialEvents, signOutPath }: { initialEvents: EventIte
     }
   }
 
+  async function deleteAllPhotos(eventId: string) {
+    if (!confirm("Are you sure you want to delete all photos in this event?")) return;
+    setBusy(true);
+    try {
+      const response = await fetch(`/api/studio/events/${eventId}/photos`, { method: "DELETE" });
+      if (response.ok) {
+        setPhotos((current) => ({ ...current, [eventId]: [] }));
+        setEvents((current) => current.map((item) => item.id === eventId ? { ...item, photoCount: 0, coverPhotoId: null, coverX: 50, coverY: 50 } : item));
+        setMessage("All photos deleted.");
+      } else {
+        setMessage("The photos could not be deleted.");
+      }
+    } finally {
+      setBusy(false);
+    }
+  }
+
   return (
     <main className="studio-shell">
       <header className="studio-header">
@@ -389,7 +407,31 @@ export function Studio({ initialEvents, signOutPath }: { initialEvents: EventIte
 
             {openEventId === item.id && (
               <div className="photo-manager">
-                <div className="photo-manager-heading"><div><p>Sequence / cover</p><h3>{item.title}</h3></div><p>A compact masonry edit. Open details only when you need to arrange, describe, or delete a photo.</p></div>
+                <div className="photo-manager-heading">
+                  <div>
+                    <p>Sequence / cover</p>
+                    <h3>{item.title}</h3>
+                    {(photos[item.id] ?? []).length > 0 && (
+                      <button
+                        className="studio-delete"
+                        style={{
+                          marginTop: "12px",
+                          background: "transparent",
+                          border: "1px solid currentColor",
+                          padding: "6px 12px",
+                          font: "10px var(--font-mono)",
+                          textTransform: "uppercase",
+                          cursor: "pointer"
+                        }}
+                        onClick={() => deleteAllPhotos(item.id)}
+                        disabled={busy}
+                      >
+                        Delete all photos
+                      </button>
+                    )}
+                  </div>
+                  <p>A compact masonry edit. Open details only when you need to arrange, describe, or delete a photo.</p>
+                </div>
                 {(photos[item.id] ?? []).length ? (
                   <div className="photo-editor-grid">
                     {(photos[item.id] ?? []).map((photo, photoIndex) => {

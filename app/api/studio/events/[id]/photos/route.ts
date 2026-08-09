@@ -32,3 +32,19 @@ export async function PATCH(request:Request,{params}:{params:Promise<{id:string}
  await env.DB.batch(ids.map((id,index)=>env.DB.prepare("UPDATE photos SET position=? WHERE id=? AND event_id=?").bind(index,id,eventId)));
  return Response.json({ok:true});
 }
+
+export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
+  if (!(await isAdmin())) return Response.json({ error: "Unauthorized" }, { status: 401 });
+  await ensureSchema(env.DB);
+  const eventId = (await params).id;
+
+  const photos = await env.DB.prepare("SELECT object_key FROM photos WHERE event_id=?").bind(eventId).all<{ object_key: string }>();
+  await Promise.all(photos.results.map((photo) => env.PHOTOS.delete(photo.object_key)));
+
+  await env.DB.batch([
+    env.DB.prepare("DELETE FROM photos WHERE event_id=?").bind(eventId),
+    env.DB.prepare("UPDATE events SET cover_photo_id=NULL, cover_x=50, cover_y=50, updated_at=? WHERE id=?").bind(Date.now(), eventId),
+  ]);
+
+  return Response.json({ ok: true });
+}
