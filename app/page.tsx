@@ -31,7 +31,7 @@ export default async function Home() {
   }
 
   return (
-    <main id="top">
+    <main>
       <header className="site-header">
         <Link href="/" className="wordmark" aria-label="Clark Lo, home">CLARK LO</Link>
         <nav aria-label="Primary navigation">
@@ -46,7 +46,7 @@ export default async function Home() {
         </div>
       </header>
 
-      <section className="hero" aria-labelledby="intro-title">
+      <section className="hero" id="top" aria-labelledby="intro-title">
         <div className="hero-topline">
           <p className="hero-kicker">Taiwan — Photography</p>
           <p>School life · Performance · Community</p>
