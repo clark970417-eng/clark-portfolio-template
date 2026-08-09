@@ -6,7 +6,7 @@ import { ensureSchema } from "../../db/ensure-schema";
 import { chatGPTSignOutPath, getChatGPTUser } from "../chatgpt-auth";
 
 export const dynamic = "force-dynamic";
-const ADMIN_EMAILS = new Set(["clark970417@gmail.com"]);
+const ADMIN_EMAILS = new Set(["mary680616@gmail.com"]);
 
 export default async function StudioPage() {
   const host = (await headers()).get("host") ?? "";
