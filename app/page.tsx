@@ -93,14 +93,51 @@ export default async function Home() {
       <section className="about-section" id="about">
         <div className="section-rail"><p className="section-label">02 / About</p><a className="section-back" href="/?home#top">Back ↑</a></div>
         <div className="about-copy">
+          <p className="about-identity">Clark Lo 羅育穎 <span>— 4YUYING</span></p>
           <h2>I photograph the energy around an event—not only the moment on stage.</h2>
-          <p>My work moves between school life, performances, trips, and cosplay gatherings. I look for gestures, expressions, and quiet transitions that reveal how a shared moment feels.</p>
+          <p className="about-statement">My work moves between school life, performances, trips, and cosplay gatherings. I look for gestures, expressions, and quiet transitions that reveal how a shared moment feels.</p>
           <dl className="about-facts">
             <div><dt>Photographer</dt><dd>Clark Lo</dd></div>
             <div><dt>Currently</dt><dd>Junior at Pacific American School</dd></div>
             <div><dt>Based in</dt><dd>Taiwan</dd></div>
             <div><dt>Focus</dt><dd>Academy · Cosplay · Community</dd></div>
           </dl>
+          <div className="about-features">
+            <div className="about-features-heading">
+              <h3>Selected Features &amp; Official Use</h3>
+              <span>04 entries</span>
+            </div>
+            <ol>
+              <li>
+                <a href="https://x.com/A_erukun/status/2020708829672112219?s=20" target="_blank" rel="noreferrer">
+                  <span className="feature-source">eruk</span>
+                  <span className="feature-title">Roxy / Mushoku Tensei at FF46</span>
+                  <span className="feature-year">2026 <i aria-hidden="true">↗</i></span>
+                </a>
+              </li>
+              <li>
+                <a href="https://www.facebook.com/share/p/1JqoHXB3XR/" target="_blank" rel="noreferrer">
+                  <span className="feature-source">Zakuro</span>
+                  <span className="feature-title">Fuyuko at Comic Market 105</span>
+                  <span className="feature-year">2024 <i aria-hidden="true">↗</i></span>
+                </a>
+              </li>
+              <li>
+                <a href="https://www.facebook.com/share/p/1CZzFs8RcV/" target="_blank" rel="noreferrer">
+                  <span className="feature-source">Pacific American School</span>
+                  <span className="feature-title">PASVEX Signature Event Campaign</span>
+                  <span className="feature-year">2026 <i aria-hidden="true">↗</i></span>
+                </a>
+              </li>
+              <li>
+                <a href="https://www.facebook.com/share/p/1bQ8ZZocCP/" target="_blank" rel="noreferrer">
+                  <span className="feature-source">Pacific American School</span>
+                  <span className="feature-title">PASMUN Conference Coverage</span>
+                  <span className="feature-year">2026 <i aria-hidden="true">↗</i></span>
+                </a>
+              </li>
+            </ol>
+          </div>
         </div>
       </section>
 
