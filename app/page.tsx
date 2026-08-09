@@ -36,7 +36,8 @@ export default async function Home() {
         <Link href="/" className="wordmark" aria-label="Clark Lo, home">CLARK LO</Link>
         <p>Selected archive / 2025—2026</p>
         <nav aria-label="Primary navigation">
-          <a href="#work">Work</a>
+          <a href="#academy">Academy</a>
+          <a href="#cosplay">Cosplay</a>
           <a href="#about">About</a>
           <a href="#contact">Contact</a>
         </nav>
@@ -52,23 +53,23 @@ export default async function Home() {
           <span className="hero-index">01</span>
           <p>I’m Clark, a Taiwan-based student photographer documenting school life, performance, and community.</p>
         </div>
-        <a className="hero-scroll" href="#work">Selected work <span aria-hidden="true">↓</span></a>
+        <a className="hero-scroll" href="#academy">Selected work <span aria-hidden="true">↓</span></a>
       </section>
 
       <section className="work-section" id="work" aria-labelledby="work-title">
         {events.length ? (
           <div className="event-groups">
-            <section className="event-group" aria-labelledby="work-title">
+            <section className="event-group" id="academy" aria-labelledby="work-title">
               <div className="section-heading">
-                <h2 id="work-title">School activities</h2>
+                <h2 id="work-title">Academy</h2>
                 <p>{schoolEvents.length} {schoolEvents.length === 1 ? "story" : "stories"}</p>
               </div>
               {schoolEvents.length ? <EventGrid items={schoolEvents} /> : <p className="group-empty">School stories will appear here.</p>}
             </section>
 
-            <section className="event-group event-group-outside" aria-labelledby="outside-work-title">
+            <section className="event-group event-group-outside" id="cosplay" aria-labelledby="outside-work-title">
               <div className="section-heading">
-                <h2 id="outside-work-title">Outside-of-school activities</h2>
+                <h2 id="outside-work-title">Cosplay</h2>
                 <p>{outsideSchoolEvents.length} {outsideSchoolEvents.length === 1 ? "story" : "stories"}</p>
               </div>
               {outsideSchoolEvents.length ? <EventGrid items={outsideSchoolEvents} /> : <p className="group-empty">Outside-school stories will appear here.</p>}
