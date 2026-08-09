@@ -1,7 +1,7 @@
 import { headers } from "next/headers";
 import { getChatGPTUser } from "../../chatgpt-auth";
 
-const ADMIN_EMAILS = new Set(["mary680616@gmail.com"]);
+const ADMIN_EMAILS = new Set(["clark970417@gmail.com"]);
 
 export async function isAdmin() {
   const host = (await headers()).get("host") ?? "";
