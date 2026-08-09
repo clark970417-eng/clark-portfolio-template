@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { getPublishedEvents } from "./portfolio-data";
 import { ContactForm } from "./contact-form";
-import { BackToTop } from "./back-to-top";
 
 export const dynamic = "force-dynamic";
 
@@ -66,7 +65,7 @@ export default async function Home() {
             <section className="event-group" id="academy" aria-labelledby="work-title">
               <div className="section-heading">
                 <h2 id="work-title">Academy</h2>
-                <div className="section-heading-meta"><p>{schoolEvents.length} {schoolEvents.length === 1 ? "story" : "stories"}</p><BackToTop /></div>
+                <div className="section-heading-meta"><p>{schoolEvents.length} {schoolEvents.length === 1 ? "story" : "stories"}</p><a className="section-back" href="/?home#top">Back ↑</a></div>
               </div>
               {schoolEvents.length ? <EventGrid items={schoolEvents} /> : <p className="group-empty">School stories will appear here.</p>}
             </section>
@@ -74,7 +73,7 @@ export default async function Home() {
             <section className="event-group event-group-outside" id="cosplay" aria-labelledby="outside-work-title">
               <div className="section-heading">
                 <h2 id="outside-work-title">Cosplay</h2>
-                <div className="section-heading-meta"><p>{outsideSchoolEvents.length} {outsideSchoolEvents.length === 1 ? "story" : "stories"}</p><BackToTop /></div>
+                <div className="section-heading-meta"><p>{outsideSchoolEvents.length} {outsideSchoolEvents.length === 1 ? "story" : "stories"}</p><a className="section-back" href="/?home#top">Back ↑</a></div>
               </div>
               {outsideSchoolEvents.length ? <EventGrid items={outsideSchoolEvents} /> : <p className="group-empty">Outside-school stories will appear here.</p>}
             </section>
@@ -92,7 +91,7 @@ export default async function Home() {
       </section>
 
       <section className="about-section" id="about">
-        <div className="section-rail"><p className="section-label">02 / About</p><BackToTop /></div>
+        <div className="section-rail"><p className="section-label">02 / About</p><a className="section-back" href="/?home#top">Back ↑</a></div>
         <div className="about-copy">
           <h2>I photograph the energy around an event—not only the moment on stage.</h2>
           <p>My work moves between school life, performances, trips, and cosplay gatherings. I look for gestures, expressions, and quiet transitions that reveal how a shared moment feels.</p>
@@ -107,7 +106,7 @@ export default async function Home() {
 
       <section className="contact-section" id="contact">
         <div>
-          <div className="section-rail"><p className="section-label">03 / Contact</p><BackToTop /></div>
+          <div className="section-rail"><p className="section-label">03 / Contact</p><a className="section-back" href="/?home#top">Back ↑</a></div>
           <h2>Have something<br />in mind?</h2>
           <a className="social-link" href="https://x.com/4yuying" target="_blank" rel="noreferrer">X / @4yuying ↗</a>
         </div>
