@@ -41,8 +41,8 @@ export default async function Home() {
           <a href="#contact">Contact</a>
         </nav>
         <div className="header-socials" aria-label="Social links">
-          <span title="Instagram link coming soon">INS</span>
-          <a href="https://x.com/4yuying" target="_blank" rel="noreferrer" aria-label="Clark Lo on X">X</a>
+          <a href="https://www.instagram.com/yin_0417.jpg/?hl=en" target="_blank" rel="noreferrer" aria-label="Clark Lo on Instagram">INS</a>
+          <a href="https://x.com/4yuying?s=21&amp;t=h7d3UL9mlLZ0_H-FhiEjOQ" target="_blank" rel="noreferrer" aria-label="Clark Lo on X">X</a>
         </div>
       </header>
 
