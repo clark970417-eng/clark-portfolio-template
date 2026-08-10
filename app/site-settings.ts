@@ -29,7 +29,7 @@ export type SiteSettings = EditableSiteSettings & { profilePhotoUrl: string | nu
 export const defaultSiteSettings: EditableSiteSettings = {
   displayName: "Clark Lo",
   nativeName: "羅育穎",
-  alias: "4YUYING",
+  alias: "YuYing",
   academyLabel: "Academy",
   cosplayLabel: "Cosplay",
   heroEyebrow: "Taiwan-based student photographer",
@@ -75,7 +75,7 @@ export const settingLimits: Record<keyof EditableSiteSettings, number> = {
 };
 
 export async function getSiteSettings(): Promise<SiteSettings> {
-  if (!env.DB) return { ...defaultSiteSettings, profilePhotoUrl: null };
+  if (!env.DB) return { ...defaultSiteSettings, profilePhotoUrl: "/clark-profile.jpg" };
   try {
     await ensureSchema(env.DB);
     const rows = await env.DB.prepare("SELECT key,value,updated_at FROM site_settings").all<{ key: string; value: string; updated_at: number }>();
@@ -89,10 +89,14 @@ export async function getSiteSettings(): Promise<SiteSettings> {
     for (const key of editableSettingKeys) {
       if (typeof values[key] === "string") settings[key] = values[key];
     }
-    const profilePhotoUrl = values.profilePhotoKey ? `/api/profile-photo?v=${photoVersion}` : null;
+    const profilePhotoUrl = values.profilePhotoKey
+      ? `/api/profile-photo?v=${photoVersion}`
+      : values.profilePhotoHidden === "1"
+        ? null
+        : "/clark-profile.jpg";
     return { ...settings, profilePhotoUrl };
   } catch {
-    return { ...defaultSiteSettings, profilePhotoUrl: null };
+    return { ...defaultSiteSettings, profilePhotoUrl: "/clark-profile.jpg" };
   }
 }
 

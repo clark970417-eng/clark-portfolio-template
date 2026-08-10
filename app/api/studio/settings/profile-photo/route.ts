@@ -21,6 +21,7 @@ export async function POST(request: Request) {
   await env.DB.prepare(
     "INSERT INTO site_settings (key,value,updated_at) VALUES ('profilePhotoKey',?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value,updated_at=excluded.updated_at"
   ).bind(key, now).run();
+  await env.DB.prepare("DELETE FROM site_settings WHERE key='profilePhotoHidden'").run();
   if (current?.value && current.value !== key) await env.PHOTOS.delete(current.value);
   return Response.json({ settings: await getSiteSettings() });
 }
@@ -32,5 +33,8 @@ export async function DELETE() {
   const current = await env.DB.prepare("SELECT value FROM site_settings WHERE key='profilePhotoKey'").first<{ value: string }>();
   if (current?.value) await env.PHOTOS.delete(current.value);
   await env.DB.prepare("DELETE FROM site_settings WHERE key='profilePhotoKey'").run();
+  await env.DB.prepare(
+    "INSERT INTO site_settings (key,value,updated_at) VALUES ('profilePhotoHidden','1',?) ON CONFLICT(key) DO UPDATE SET value='1',updated_at=excluded.updated_at"
+  ).bind(Date.now()).run();
   return Response.json({ settings: await getSiteSettings() });
 }

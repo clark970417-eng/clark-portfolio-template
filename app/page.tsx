@@ -99,7 +99,7 @@ export default async function Home() {
           <h2>{settings.aboutHeadline}</h2>
         </div>
         <div className="about-content">
-          {settings.profilePhotoUrl && <figure className="about-portrait"><img src={settings.profilePhotoUrl} alt={`${settings.displayName} portrait`} loading="lazy" decoding="async" /></figure>}
+          {settings.profilePhotoUrl && <figure className={`about-portrait${settings.profilePhotoUrl === "/clark-profile.jpg" ? " is-tight-crop" : ""}`}><div className="about-portrait-frame"><img src={settings.profilePhotoUrl} alt={`${settings.displayName} portrait`} loading="lazy" decoding="async" /></div><figcaption>{settings.displayName} — {settings.alias}</figcaption></figure>}
           <div className="about-biographies">
             <div className="about-language"><span>English</span>{settings.aboutBioEn.split(/\n\n+/).map((paragraph) => <p key={paragraph}>{paragraph}</p>)}</div>
             {settings.aboutBioJa && <details className="about-japanese"><summary>日本語で読む <span aria-hidden="true">＋</span></summary><div>{settings.aboutBioJa.split(/\n\n+/).map((paragraph) => <p key={paragraph}>{paragraph}</p>)}</div></details>}
