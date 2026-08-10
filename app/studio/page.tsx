@@ -4,6 +4,7 @@ import { env } from "cloudflare:workers";
 import { headers } from "next/headers";
 import { ensureSchema } from "../../db/ensure-schema";
 import { chatGPTSignOutPath, getChatGPTUser } from "../chatgpt-auth";
+import { getSiteSettings } from "../site-settings";
 
 export const dynamic = "force-dynamic";
 const ADMIN_EMAILS = new Set(["clark970417@gmail.com"]);
@@ -28,5 +29,6 @@ export default async function StudioPage() {
       events = result.results;
     } catch { /* first deployment runs migrations before use */ }
   }
-  return <Studio initialEvents={events} signOutPath={isLocal ? "/" : chatGPTSignOutPath("/")} />;
+  const settings = await getSiteSettings();
+  return <Studio initialEvents={events} initialSettings={settings} signOutPath={isLocal ? "/" : chatGPTSignOutPath("/")} />;
 }

@@ -42,8 +42,8 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
   if (!(await isAdmin())) return Response.json({ error: "Unauthorized" }, { status: 401 });
   await ensureSchema(env.DB);
   const id = (await params).id;
-  const photos = await env.DB.prepare("SELECT object_key FROM photos WHERE event_id=?").bind(id).all<{ object_key: string }>();
-  await Promise.all(photos.results.map((photo) => env.PHOTOS.delete(photo.object_key)));
+  const photos = await env.DB.prepare("SELECT object_key,thumbnail_key FROM photos WHERE event_id=?").bind(id).all<{ object_key: string; thumbnail_key: string | null }>();
+  await Promise.all(photos.results.flatMap((photo) => [env.PHOTOS.delete(photo.object_key), ...(photo.thumbnail_key ? [env.PHOTOS.delete(photo.thumbnail_key)] : [])]));
   await env.DB.batch([
     env.DB.prepare("DELETE FROM photos WHERE event_id=?").bind(id),
     env.DB.prepare("DELETE FROM events WHERE id=?").bind(id),

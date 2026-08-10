@@ -10,10 +10,10 @@ test("portfolio source contains the finished public experience", async()=>{
     readFile(new URL("../package.json",import.meta.url),"utf8"),
   ]);
   assert.match(layout,/Clark Lo — Photography/);
-  assert.match(page,/I keep the moments/);
-  assert.match(page,/School activities/);
-  assert.match(page,/Outside-of-school activities/);
-  assert.match(page,/student photographer/);
+  assert.match(page,/getSiteSettings/);
+  assert.match(page,/Selected work/);
+  assert.match(page,/View story/);
+  assert.match(page,/aboutBioEn/);
   assert.match(page,/objectPosition/);
   assert.match(css,/prefers-reduced-motion/);
   assert.doesNotMatch(page,/SkeletonPreview|codex-preview/);
@@ -35,6 +35,23 @@ test("studio protects writes and strips image metadata client-side",async()=>{
   assert.match(studio,/Drag photo to reframe/);
   assert.match(studio,/Save crop/);
   assert.match(studio,/compact masonry edit/);
-  assert.match(auth,/mary680616@gmail\.com/);
+  assert.match(auth,/clark970417@gmail\.com/);
   assert.match(upload,/await isAdmin\(\)/);
+});
+
+test("studio can edit the public identity, biography, links, features, and profile photo",async()=>{
+  const [editor,settingsApi,profileApi,settings]=await Promise.all([
+    readFile(new URL("../app/studio/site-settings-editor.tsx",import.meta.url),"utf8"),
+    readFile(new URL("../app/api/studio/settings/route.ts",import.meta.url),"utf8"),
+    readFile(new URL("../app/api/studio/settings/profile-photo/route.ts",import.meta.url),"utf8"),
+    readFile(new URL("../app/site-settings.ts",import.meta.url),"utf8"),
+  ]);
+  assert.match(editor,/English biography/);
+  assert.match(editor,/Japanese biography/);
+  assert.match(editor,/Selected features/);
+  assert.match(editor,/Choose profile photo/);
+  assert.match(settingsApi,/await isAdmin\(\)/);
+  assert.match(profileApi,/await isAdmin\(\)/);
+  assert.match(settings,/Pacific American School/);
+  assert.match(settings,/profilePhotoUrl/);
 });

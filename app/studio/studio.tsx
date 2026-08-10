@@ -1,7 +1,10 @@
 "use client";
 
 import { FormEvent, PointerEvent as ReactPointerEvent, useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import smartcrop from "smartcrop";
+import type { SiteSettings } from "../site-settings";
+import { SiteSettingsEditor } from "./site-settings-editor";
 
 type EventCategory = "school" | "outside-school";
 type EventItem = {
@@ -18,7 +21,7 @@ type EventItem = {
 };
 type PhotoItem = { id: string; alt: string; url: string; position: number };
 
-export function Studio({ initialEvents, signOutPath }: { initialEvents: EventItem[]; signOutPath: string }) {
+export function Studio({ initialEvents, initialSettings, signOutPath }: { initialEvents: EventItem[]; initialSettings: SiteSettings; signOutPath: string }) {
   const [events, setEvents] = useState(initialEvents);
   const [photos, setPhotos] = useState<Record<string, PhotoItem[]>>({});
   const [openEventId, setOpenEventId] = useState<string | null>(null);
@@ -195,7 +198,10 @@ export function Studio({ initialEvents, signOutPath }: { initialEvents: EventIte
       try {
         const prepared = await preparePhoto(file);
         const form = new FormData();
-        form.append("photos", prepared, `${file.name.replace(/\.[^.]+$/, "")}.webp`);
+        form.append("photos", prepared.full, `${file.name.replace(/\.[^.]+$/, "")}.webp`);
+        form.append("thumbnail", prepared.thumbnail, `${file.name.replace(/\.[^.]+$/, "")}-thumb.webp`);
+        form.append("width", String(prepared.width));
+        form.append("height", String(prepared.height));
         setMessage(`Uploading photo ${index + 1} of ${selectedFiles.length}…`);
         const response = await fetch(`/api/studio/events/${eventId}/photos`, { method: "POST", body: form });
         const responseText = await response.text();
@@ -368,8 +374,10 @@ export function Studio({ initialEvents, signOutPath }: { initialEvents: EventIte
     <main className="studio-shell">
       <header className="studio-header">
         <div><p>Private studio</p><h1>Clark Lo</h1></div>
-        <div><a href="/">View site ↗</a><a href={signOutPath}>Sign out</a></div>
+        <div><Link href="/">View site ↗</Link><a href={signOutPath}>Sign out</a></div>
       </header>
+
+      <SiteSettingsEditor initialSettings={initialSettings} />
 
       <section className="studio-new">
         <h2>New event</h2>
@@ -506,12 +514,12 @@ export function Studio({ initialEvents, signOutPath }: { initialEvents: EventIte
   );
 }
 
-async function preparePhoto(file: File): Promise<Blob> {
+async function preparePhoto(file: File): Promise<{ full: Blob; thumbnail: Blob; width: number; height: number }> {
   const bitmap = await createImageBitmap(file);
-  const max = 2200;
+  const max = 1800;
   let scale = Math.min(1, max / Math.max(bitmap.width, bitmap.height));
   const canvas = document.createElement("canvas");
-  const targetBytes = 800 * 1024;
+  const targetBytes = 600 * 1024;
   let quality = 0.82;
   let blob: Blob | null = null;
 
@@ -530,9 +538,19 @@ async function preparePhoto(file: File): Promise<Blob> {
     }
   }
 
-  bitmap.close();
   if (!blob || blob.size > targetBytes) throw new Error("Photo could not be reduced below the upload limit");
-  return blob;
+  const width = canvas.width;
+  const height = canvas.height;
+  const thumbScale = Math.min(1, 900 / Math.max(bitmap.width, bitmap.height));
+  const thumbCanvas = document.createElement("canvas");
+  thumbCanvas.width = Math.max(1, Math.round(bitmap.width * thumbScale));
+  thumbCanvas.height = Math.max(1, Math.round(bitmap.height * thumbScale));
+  const thumbContext = thumbCanvas.getContext("2d");
+  if (!thumbContext) throw new Error("Canvas unavailable");
+  thumbContext.drawImage(bitmap, 0, 0, thumbCanvas.width, thumbCanvas.height);
+  const thumbnail = await canvasToBlob(thumbCanvas, 0.76);
+  bitmap.close();
+  return { full: blob, thumbnail, width, height };
 }
 
 function canvasToBlob(canvas: HTMLCanvasElement, quality: number): Promise<Blob> {

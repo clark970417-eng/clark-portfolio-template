@@ -18,11 +18,18 @@ export const photos = sqliteTable("photos", {
   id: text("id").primaryKey(),
   eventId: text("event_id").notNull(),
   objectKey: text("object_key").notNull(),
+  thumbnailKey: text("thumbnail_key"),
   alt: text("alt").notNull().default(""),
   width: integer("width"),
   height: integer("height"),
   position: integer("position").notNull().default(0),
   createdAt: integer("created_at").notNull(),
+});
+
+export const siteSettings = sqliteTable("site_settings", {
+  key: text("key").primaryKey(),
+  value: text("value").notNull(),
+  updatedAt: integer("updated_at").notNull(),
 });
 
 export const verificationCodes = sqliteTable("verification_codes", {

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { IBM_Plex_Mono, Instrument_Serif, Manrope } from "next/font/google";
 import "./globals.css";
+import "./public.css";
 
 const display = Instrument_Serif({ variable: "--font-display", subsets: ["latin"], weight: "400" });
 const body = Manrope({ variable: "--font-body", subsets: ["latin"] });

@@ -16,7 +16,17 @@ export async function POST(request:Request,{params}:{params:Promise<{id:string}>
  const eventId=(await params).id, form=await request.formData(), files=form.getAll("photos").filter((value):value is File=>value instanceof File);
  if(!files.length)return Response.json({error:"Choose at least one photo."},{status:400}); if(files.length>30)return Response.json({error:"Upload up to 30 photos at a time."},{status:400});
  const allowed=new Set(["image/jpeg","image/png","image/webp"]);let count=0;
- for(const file of files){if(!allowed.has(file.type)||file.size>15*1024*1024)continue;const id=crypto.randomUUID(),key=`events/${eventId}/${id}.webp`;await env.PHOTOS.put(key,file.stream(),{httpMetadata:{contentType:file.type,cacheControl:"public, max-age=31536000"}});await env.DB.prepare("INSERT INTO photos (id,event_id,object_key,alt,position,created_at) VALUES (?,?,?,'',(SELECT COALESCE(MAX(position),-1)+1 FROM photos WHERE event_id=?),?)").bind(id,eventId,key,eventId,Date.now()).run();count++}
+ const thumbnail=form.get("thumbnail");
+ const width=Math.max(1,Math.min(10000,Number(form.get("width"))||1));
+ const height=Math.max(1,Math.min(10000,Number(form.get("height"))||1));
+ for(const file of files){
+  if(!allowed.has(file.type)||file.size>15*1024*1024)continue;
+  const id=crypto.randomUUID(),key=`events/${eventId}/${id}.webp`;
+  const thumbnailKey=thumbnail instanceof File&&allowed.has(thumbnail.type)&&thumbnail.size<=2*1024*1024?`events/${eventId}/${id}-thumb.webp`:null;
+  await env.PHOTOS.put(key,file.stream(),{httpMetadata:{contentType:file.type,cacheControl:"public, max-age=31536000"}});
+  if(thumbnailKey&&thumbnail instanceof File)await env.PHOTOS.put(thumbnailKey,thumbnail.stream(),{httpMetadata:{contentType:thumbnail.type,cacheControl:"public, max-age=31536000"}});
+  await env.DB.prepare("INSERT INTO photos (id,event_id,object_key,thumbnail_key,alt,width,height,position,created_at) VALUES (?,?,?,?,'',?,?,(SELECT COALESCE(MAX(position),-1)+1 FROM photos WHERE event_id=?),?)").bind(id,eventId,key,thumbnailKey,width,height,eventId,Date.now()).run();count++
+ }
  return count?Response.json({count}):Response.json({error:"No supported photos were uploaded."},{status:400});
 }
 
@@ -38,8 +48,8 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
   await ensureSchema(env.DB);
   const eventId = (await params).id;
 
-  const photos = await env.DB.prepare("SELECT object_key FROM photos WHERE event_id=?").bind(eventId).all<{ object_key: string }>();
-  await Promise.all(photos.results.map((photo) => env.PHOTOS.delete(photo.object_key)));
+  const photos = await env.DB.prepare("SELECT object_key,thumbnail_key FROM photos WHERE event_id=?").bind(eventId).all<{ object_key: string; thumbnail_key: string | null }>();
+  await Promise.all(photos.results.flatMap((photo) => [env.PHOTOS.delete(photo.object_key), ...(photo.thumbnail_key ? [env.PHOTOS.delete(photo.thumbnail_key)] : [])]));
 
   await env.DB.batch([
     env.DB.prepare("DELETE FROM photos WHERE event_id=?").bind(eventId),
