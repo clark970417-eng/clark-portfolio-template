@@ -65,6 +65,9 @@ test("homepage rotates Academy photographs every three seconds without immediate
   assert.match(slideshow,/1 \+ Math\.floor\(Math\.random\(\) \* \(photos\.length - 1\)\)/);
   assert.match(slideshow,/prefers-reduced-motion: reduce/);
   assert.match(slideshow,/onMouseEnter/);
+  assert.match(slideshow,/hero-slide-backdrop/);
+  assert.match(slideshow,/hero-slide-foreground/);
+  assert.doesNotMatch(slideshow,/Random frame/);
   assert.match(data,/WHERE e\.status = 'published' AND e\.category = 'school'/);
   assert.doesNotMatch(slideshow,/hero-slide-timer/);
 });

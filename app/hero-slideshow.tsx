@@ -44,11 +44,10 @@ export function HeroSlideshow({ photos }: { photos: HeroPhoto[] }) {
       onBlur={() => setPaused(false)}
     >
       <div className="hero-feature-image">
-        {previousIndex !== null && photos[previousIndex] && <img className="hero-slide is-previous" src={photos[previousIndex].url} alt="" style={{ objectPosition: `${photos[previousIndex].x}% ${photos[previousIndex].y}%` }} decoding="async" />}
-        <img key={active.id} className="hero-slide is-active" src={active.url} alt="" style={{ objectPosition: `${active.x}% ${active.y}%` }} loading={activeIndex === 0 ? "eager" : "lazy"} decoding="async" fetchPriority={activeIndex === 0 ? "high" : "auto"} />
+        {previousIndex !== null && photos[previousIndex] && <div className="hero-slide is-previous"><img className="hero-slide-backdrop" src={photos[previousIndex].url} alt="" style={{ objectPosition: `${photos[previousIndex].x}% ${photos[previousIndex].y}%` }} decoding="async" /><img className="hero-slide-foreground" src={photos[previousIndex].url} alt="" decoding="async" /></div>}
+        <div key={active.id} className="hero-slide is-active"><img className="hero-slide-backdrop" src={active.url} alt="" style={{ objectPosition: `${active.x}% ${active.y}%` }} loading={activeIndex === 0 ? "eager" : "lazy"} decoding="async" fetchPriority={activeIndex === 0 ? "high" : "auto"} /><img className="hero-slide-foreground" src={active.url} alt="" loading={activeIndex === 0 ? "eager" : "lazy"} decoding="async" /></div>
       </div>
       <div className="hero-feature-caption">
-        <span>Random frame {String(activeIndex + 1).padStart(2, "0")}/{String(photos.length).padStart(2, "0")}</span>
         <strong>{active.title}</strong>
         <i aria-hidden="true">Open ↗</i>
       </div>
