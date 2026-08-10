@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import type { HeroPhoto } from "./portfolio-data";
 
-const CHANGE_INTERVAL = 5000;
+const CHANGE_INTERVAL = 3000;
 const FADE_DURATION = 900;
 
 export function HeroSlideshow({ photos }: { photos: HeroPhoto[] }) {
@@ -35,7 +35,7 @@ export function HeroSlideshow({ photos }: { photos: HeroPhoto[] }) {
 
   return (
     <Link
-      className={`hero-feature hero-slideshow${paused ? " is-paused" : ""}`}
+      className="hero-feature hero-slideshow"
       href={`/events/${active.slug}`}
       aria-label={`View story: ${active.title}`}
       onMouseEnter={() => setPaused(true)}
@@ -46,7 +46,6 @@ export function HeroSlideshow({ photos }: { photos: HeroPhoto[] }) {
       <div className="hero-feature-image">
         {previousIndex !== null && photos[previousIndex] && <img className="hero-slide is-previous" src={photos[previousIndex].url} alt="" style={{ objectPosition: `${photos[previousIndex].x}% ${photos[previousIndex].y}%` }} decoding="async" />}
         <img key={active.id} className="hero-slide is-active" src={active.url} alt="" style={{ objectPosition: `${active.x}% ${active.y}%` }} loading={activeIndex === 0 ? "eager" : "lazy"} decoding="async" fetchPriority={activeIndex === 0 ? "high" : "auto"} />
-        {photos.length > 1 && <span key={active.id} className="hero-slide-timer" aria-hidden="true" />}
       </div>
       <div className="hero-feature-caption">
         <span>Random frame {String(activeIndex + 1).padStart(2, "0")}/{String(photos.length).padStart(2, "0")}</span>

@@ -32,7 +32,7 @@ export async function getHeroPhotos(): Promise<HeroPhoto[]> {
         CASE WHEN p.id = e.cover_photo_id THEN e.cover_y ELSE 50 END AS y
       FROM photos p
       JOIN events e ON e.id = p.event_id
-      WHERE e.status = 'published'
+      WHERE e.status = 'published' AND e.category = 'school'
       ORDER BY e.position ASC, CASE WHEN p.id = e.cover_photo_id THEN 0 ELSE 1 END, p.position ASC
       LIMIT 80
     `).all<{ id: string; title: string; slug: string; x: number; y: number }>();
