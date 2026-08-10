@@ -4,6 +4,7 @@ import { ensureSchema } from "../db/ensure-schema";
 export type EventCategory = "school" | "outside-school";
 export type PortfolioEvent = { id: string; title: string; slug: string; category: EventCategory; coverUrl: string | null; coverX: number; coverY: number };
 export type EventPhoto = { id: string; alt: string; url: string; width: number | null; height: number | null };
+export type HeroPhoto = { id: string; title: string; slug: string; url: string; x: number; y: number };
 
 export async function getPublishedEvents(): Promise<PortfolioEvent[]> {
   if (!env.DB) return [];
@@ -18,6 +19,24 @@ export async function getPublishedEvents(): Promise<PortfolioEvent[]> {
       FROM events e WHERE e.status = 'published' ORDER BY e.position ASC, e.created_at DESC
     `).all<{ id: string; title: string; slug: string; category: EventCategory; cover_id: string | null; cover_x: number; cover_y: number }>();
     return result.results.map((row) => ({ ...row, coverX: row.cover_x, coverY: row.cover_y, coverUrl: row.cover_id ? `/api/photos/${row.cover_id}?variant=thumb` : null }));
+  } catch { return []; }
+}
+
+export async function getHeroPhotos(): Promise<HeroPhoto[]> {
+  if (!env.DB) return [];
+  try {
+    await ensureSchema(env.DB);
+    const result = await env.DB.prepare(`
+      SELECT p.id, e.title, e.slug,
+        CASE WHEN p.id = e.cover_photo_id THEN e.cover_x ELSE 50 END AS x,
+        CASE WHEN p.id = e.cover_photo_id THEN e.cover_y ELSE 50 END AS y
+      FROM photos p
+      JOIN events e ON e.id = p.event_id
+      WHERE e.status = 'published'
+      ORDER BY e.position ASC, CASE WHEN p.id = e.cover_photo_id THEN 0 ELSE 1 END, p.position ASC
+      LIMIT 80
+    `).all<{ id: string; title: string; slug: string; x: number; y: number }>();
+    return result.results.map((photo) => ({ ...photo, url: `/api/photos/${photo.id}?variant=thumb` }));
   } catch { return []; }
 }
 

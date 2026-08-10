@@ -55,3 +55,15 @@ test("studio can edit the public identity, biography, links, features, and profi
   assert.match(settings,/Pacific American School/);
   assert.match(settings,/profilePhotoUrl/);
 });
+
+test("homepage rotates published photographs every five seconds without immediate repeats",async()=>{
+  const [slideshow,data]=await Promise.all([
+    readFile(new URL("../app/hero-slideshow.tsx",import.meta.url),"utf8"),
+    readFile(new URL("../app/portfolio-data.ts",import.meta.url),"utf8"),
+  ]);
+  assert.match(slideshow,/CHANGE_INTERVAL = 5000/);
+  assert.match(slideshow,/1 \+ Math\.floor\(Math\.random\(\) \* \(photos\.length - 1\)\)/);
+  assert.match(slideshow,/prefers-reduced-motion: reduce/);
+  assert.match(slideshow,/onMouseEnter/);
+  assert.match(data,/WHERE e\.status = 'published'/);
+});

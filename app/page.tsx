@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ContactForm } from "./contact-form";
-import { getPublishedEvents } from "./portfolio-data";
+import { HeroSlideshow } from "./hero-slideshow";
+import { getHeroPhotos, getPublishedEvents } from "./portfolio-data";
 import type { PortfolioEvent } from "./portfolio-data";
 import { getSiteSettings, parseFeatures } from "./site-settings";
 import { SiteMotion } from "./site-motion";
@@ -29,10 +30,9 @@ function EventGrid({ items }: { items: PortfolioEvent[] }) {
 }
 
 export default async function Home() {
-  const [events, settings] = await Promise.all([getPublishedEvents(), getSiteSettings()]);
+  const [events, heroPhotos, settings] = await Promise.all([getPublishedEvents(), getHeroPhotos(), getSiteSettings()]);
   const schoolEvents = events.filter((event) => event.category === "school");
   const outsideSchoolEvents = events.filter((event) => event.category === "outside-school");
-  const featured = events.find((event) => event.coverUrl);
   const features = parseFeatures(settings.featuresText);
 
   return (
@@ -59,11 +59,8 @@ export default async function Home() {
           <p className="hero-intro">{settings.heroIntro}</p>
           <a className="hero-scroll" href="#academy">Selected work <span aria-hidden="true">↓</span></a>
         </div>
-        {featured ? (
-          <Link className="hero-feature" href={`/events/${featured.slug}`} aria-label={`View featured story: ${featured.title}`}>
-            <div className="hero-feature-image"><img src={featured.coverUrl!} alt="" style={{ objectPosition: `${featured.coverX}% ${featured.coverY}%` }} loading="eager" decoding="async" fetchPriority="high" /></div>
-            <div className="hero-feature-caption"><span>Featured story</span><strong>{featured.title}</strong><i aria-hidden="true">Open ↗</i></div>
-          </Link>
+        {heroPhotos.length ? (
+          <HeroSlideshow photos={heroPhotos} />
         ) : <div className="hero-feature hero-feature-empty"><span>Photographs coming soon</span></div>}
         <div className="hero-meta"><span>{String(events.length).padStart(2, "0")} published stories</span><span>{settings.location} / 2024—{new Date().getFullYear()}</span></div>
       </section>

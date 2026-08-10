@@ -37,6 +37,13 @@
 .hero-feature-image::after { position:absolute; inset:0; border:1px solid #ffffff38; content:""; pointer-events:none; }
 .hero-feature img { display:block; width:100%; height:100%; object-fit:cover; transition:transform .8s cubic-bezier(.2,.75,.2,1); }
 .hero-feature:hover img,.hero-feature:focus-visible img { transform:scale(1.018); }
+.hero-slideshow .hero-feature-image { isolation:isolate; }
+.hero-slideshow .hero-slide { position:absolute; z-index:1; inset:0; }
+.hero-slideshow .hero-slide.is-active { animation:hero-slide-in .9s cubic-bezier(.2,.75,.2,1) both; }
+.hero-slideshow .hero-slide.is-previous { z-index:0; }
+.hero-slide-timer { position:absolute; z-index:3; right:0; bottom:0; left:0; height:2px; overflow:hidden; background:#ffffff21; }
+.hero-slide-timer::after { display:block; width:100%; height:100%; background:#9db0ff; content:""; transform-origin:left; animation:hero-slide-timer 5s linear both; }
+.hero-slideshow.is-paused .hero-slide-timer::after { animation-play-state:paused; }
 .hero-feature-caption { display:grid; grid-template-columns:120px 1fr auto; gap:20px; align-items:baseline; padding:14px 0; border-bottom:1px solid var(--night-line); }
 .hero-feature-caption span,.hero-feature-caption i { color:#969f99; font:9px var(--font-mono); font-style:normal; text-transform:uppercase; letter-spacing:.09em; }
 .hero-feature-caption strong { font-size:13px; font-weight:500; }
@@ -46,6 +53,8 @@
 
 @keyframes hero-copy-in { from { opacity:0; transform:translateY(18px); } to { opacity:1; transform:none; } }
 @keyframes hero-frame-in { from { opacity:0; transform:translate(24px,12px); } to { opacity:1; transform:translate(calc(var(--pointer-x) * 7px),calc(var(--pointer-y) * 7px)); } }
+@keyframes hero-slide-in { from { opacity:0; transform:scale(1.015); } to { opacity:1; transform:none; } }
+@keyframes hero-slide-timer { from { transform:scaleX(0); } to { transform:scaleX(1); } }
 
 .home-page .work-section { padding:clamp(80px,9vw,145px) 3vw clamp(120px,15vw,230px); }
 .home-page .event-groups { display:grid; gap:clamp(140px,17vw,270px); }
@@ -189,4 +198,5 @@
 @media (prefers-reduced-motion:reduce) {
   .hero-copy>*,.hero-feature { animation:none!important; }
   .hero-feature { transform:none!important; }
+  .hero-slide-timer { display:none; }
 }
