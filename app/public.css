@@ -127,6 +127,7 @@
 .home-page .contact-form { align-self:center; padding-top:84px; }
 .home-page .contact-form label { border-color:#10141166; }
 .home-page .contact-form label:focus-within { border-color:var(--focus); }
+.home-page .contact-sign-in:hover { background:var(--focus); border-color:var(--focus); }
 .home-page .form-action button { background:var(--night); }
 .home-page .form-action button:hover { background:var(--focus); border-color:var(--focus); }
 .home-page footer { background:#dfe6ff; grid-template-columns:auto 1fr auto; display:grid; gap:20px; }

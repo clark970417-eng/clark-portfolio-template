@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { chatGPTSignInPath, getChatGPTUser } from "./chatgpt-auth";
 import { ContactForm } from "./contact-form";
 import { HeroSlideshow } from "./hero-slideshow";
 import { getHeroPhotos, getPublishedEvents } from "./portfolio-data";
@@ -30,7 +31,7 @@ function EventGrid({ items }: { items: PortfolioEvent[] }) {
 }
 
 export default async function Home() {
-  const [events, heroPhotos, settings] = await Promise.all([getPublishedEvents(), getHeroPhotos(), getSiteSettings()]);
+  const [events, heroPhotos, settings, contactUser] = await Promise.all([getPublishedEvents(), getHeroPhotos(), getSiteSettings(), getChatGPTUser()]);
   const schoolEvents = events.filter((event) => event.category === "school");
   const outsideSchoolEvents = events.filter((event) => event.category === "outside-school");
   const features = parseFeatures(settings.featuresText);
@@ -118,7 +119,7 @@ export default async function Home() {
           <h2>{settings.contactHeadline}</h2>
           <div className="contact-links"><a href={`mailto:${settings.contactEmail}`}>{settings.contactEmail}</a>{settings.instagramUrl && <a href={settings.instagramUrl} target="_blank" rel="noreferrer">Instagram ↗</a>}{settings.xUrl && <a href={settings.xUrl} target="_blank" rel="noreferrer">X / {settings.alias} ↗</a>}</div>
         </div>
-        <ContactForm contactEmail={settings.contactEmail} />
+        <ContactForm contactEmail={settings.contactEmail} signInPath={chatGPTSignInPath("/#contact")} user={contactUser} />
       </section>
 
       <footer><span>© {new Date().getFullYear()} {settings.displayName}</span><span>{settings.alias} / Photography</span><a href="#top">Back to top ↑</a></footer>

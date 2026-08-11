@@ -92,6 +92,16 @@ main { overflow-x:clip; }
 .contact-section h2 { margin:105px 0 50px; font:400 clamp(72px,8vw,128px)/.82 var(--font-display); letter-spacing:-.05em; }
 .social-link { font:12px var(--font-mono); text-transform:uppercase; }
 .contact-form { padding-top:68px; }
+.contact-auth-panel { align-self:center; }
+.contact-auth-label,.contact-identity span { margin:0 0 14px; font:10px var(--font-mono); text-transform:uppercase; letter-spacing:.08em; }
+.contact-auth-panel h3 { max-width:520px; margin:0 0 18px; font:400 clamp(32px,4vw,58px)/.95 var(--font-display); letter-spacing:-.035em; }
+.contact-auth-panel>p:not(.contact-auth-label) { max-width:470px; margin:0 0 30px; color:var(--muted); line-height:1.6; }
+.contact-sign-in { width:min(100%,360px); padding:17px 18px; display:flex; justify-content:space-between; border:1px solid var(--ink); background:var(--ink); color:var(--white); font:10px var(--font-mono); text-transform:uppercase; letter-spacing:.06em; transition:background .2s,border-color .2s; }
+.contact-sign-in:hover { background:var(--red); border-color:var(--red); }
+.contact-identity { margin-bottom:36px; padding:0 0 16px; border-bottom:1px solid var(--ink); }
+.contact-identity span,.contact-identity strong,.contact-identity small { display:block; }
+.contact-identity strong { margin-bottom:5px; font:400 22px var(--font-body); }
+.contact-identity small { color:var(--muted); font:11px var(--font-mono); }
 .contact-form label { display:block; padding:0 0 12px; margin-bottom:36px; border-bottom:1px solid var(--ink); font:10px var(--font-mono); text-transform:uppercase; letter-spacing:.08em; transition:border-color .2s; }
 .contact-form label:focus-within { border-color:var(--red); }
 .contact-form input,.contact-form textarea { display:block; width:100%; margin-top:12px; padding:8px 0; background:transparent; border:0; outline:0; resize:vertical; font:16px var(--font-body); text-transform:none; }
@@ -99,6 +109,7 @@ main { overflow-x:clip; }
 .form-action button,.studio-button { border:1px solid var(--ink); background:var(--ink); color:var(--white); padding:14px 18px; cursor:pointer; display:flex; gap:58px; justify-content:space-between; font:10px var(--font-mono); text-transform:uppercase; letter-spacing:.06em; transition:background .2s,border-color .2s; }
 .form-action button:hover,.studio-button:hover { background:var(--red); border-color:var(--red); }.form-action button:disabled { opacity:.5; }
 .form-action p { font-size:12px; max-width:320px; }
+.form-action p.is-error { color:#9b352a; }
 footer { min-height:90px; padding:0 3vw; border-top:1px solid var(--line); display:flex; justify-content:space-between; align-items:center; font:11px var(--font-mono); text-transform:uppercase; }
 .event-page { min-height:100vh; background:var(--dark); color:#f4f5f1; }.event-header { min-height:72vh; padding:30px 3vw 50px; display:grid; grid-template-columns:1fr 2fr; grid-template-rows:auto 1fr auto; gap:30px; border-bottom:1px solid #3c413e; }.event-header-nav { grid-column:1/-1; display:flex; justify-content:space-between; }.event-header a { font:10px var(--font-mono); text-transform:uppercase; letter-spacing:.08em; }.event-title-block { grid-column:1/-1; align-self:center; }.event-title-block>p { margin:0 0 20px; color:#989f9a; font:10px var(--font-mono); text-transform:uppercase; letter-spacing:.09em; }.event-header h1 { margin:0; max-width:1500px; font:400 clamp(72px,10vw,158px)/.82 var(--font-display); letter-spacing:-.055em; }.event-intro { grid-column:2; justify-self:end; max-width:430px; margin:0; color:#c9ceca; font-size:13px; line-height:1.7; }
 .event-gallery { padding:6px 3vw 130px; column-count:3; column-gap:6px; }.event-gallery figure { position:relative; display:inline-block; width:100%; margin:0 0 6px; break-inside:avoid; vertical-align:top; content-visibility:auto; contain-intrinsic-size:500px 700px; background:#202421; overflow:hidden; }.event-gallery img { display:block; width:100%; height:auto; transition:filter .35s,transform .55s cubic-bezier(.2,.8,.2,1); }.event-gallery figure:hover img { filter:brightness(.72); transform:scale(1.01); }.event-gallery figcaption { position:absolute; right:10px; bottom:9px; opacity:0; font:9px var(--font-mono); transition:opacity .2s; }.event-gallery figure:hover figcaption { opacity:1; }

@@ -71,3 +71,16 @@ test("homepage rotates Academy photographs every three seconds without immediate
   assert.match(data,/WHERE e\.status = 'published' AND e\.category = 'school'/);
   assert.doesNotMatch(slideshow,/hero-slide-timer/);
 });
+
+test("contact messages require a server-verified signed-in identity",async()=>{
+  const [form,route,page]=await Promise.all([
+    readFile(new URL("../app/contact-form.tsx",import.meta.url),"utf8"),
+    readFile(new URL("../app/api/contact/route.ts",import.meta.url),"utf8"),
+    readFile(new URL("../app/page.tsx",import.meta.url),"utf8"),
+  ]);
+  assert.match(form,/Sign in with ChatGPT/);
+  assert.doesNotMatch(form,/name="email"/);
+  assert.match(route,/await getChatGPTUser\(\)/);
+  assert.match(route,/reply_to:user\.email/);
+  assert.match(page,/chatGPTSignInPath\("\/#contact"\)/);
+});
