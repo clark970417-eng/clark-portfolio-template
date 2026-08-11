@@ -96,12 +96,14 @@ main { overflow-x:clip; }
 .contact-auth-label,.contact-identity span { margin:0 0 14px; font:10px var(--font-mono); text-transform:uppercase; letter-spacing:.08em; }
 .contact-auth-panel h3 { max-width:520px; margin:0 0 18px; font:400 clamp(32px,4vw,58px)/.95 var(--font-display); letter-spacing:-.035em; }
 .contact-auth-panel>p:not(.contact-auth-label) { max-width:470px; margin:0 0 30px; color:var(--muted); line-height:1.6; }
-.contact-sign-in { width:min(100%,360px); padding:17px 18px; display:flex; justify-content:space-between; border:1px solid var(--ink); background:var(--ink); color:var(--white); font:10px var(--font-mono); text-transform:uppercase; letter-spacing:.06em; transition:background .2s,border-color .2s; }
-.contact-sign-in:hover { background:var(--red); border-color:var(--red); }
+.google-sign-in { width:min(100%,360px); min-height:44px; }
+.contact-auth-error { margin-top:16px!important; color:#9b352a!important; }
 .contact-identity { margin-bottom:36px; padding:0 0 16px; border-bottom:1px solid var(--ink); }
 .contact-identity span,.contact-identity strong,.contact-identity small { display:block; }
 .contact-identity strong { margin-bottom:5px; font:400 22px var(--font-body); }
 .contact-identity small { color:var(--muted); font:11px var(--font-mono); }
+.contact-identity button { margin-top:12px; padding:0; border:0; background:transparent; color:var(--muted); cursor:pointer; font:9px var(--font-mono); text-transform:uppercase; letter-spacing:.06em; }
+.contact-identity button:hover { color:var(--red); }
 .contact-form label { display:block; padding:0 0 12px; margin-bottom:36px; border-bottom:1px solid var(--ink); font:10px var(--font-mono); text-transform:uppercase; letter-spacing:.08em; transition:border-color .2s; }
 .contact-form label:focus-within { border-color:var(--red); }
 .contact-form input,.contact-form textarea { display:block; width:100%; margin-top:12px; padding:8px 0; background:transparent; border:0; outline:0; resize:vertical; font:16px var(--font-body); text-transform:none; }

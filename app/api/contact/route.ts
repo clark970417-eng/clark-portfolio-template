@@ -1,11 +1,11 @@
 import { getSiteSettings } from "../../site-settings";
-import { getChatGPTUser } from "../../chatgpt-auth";
+import { verifyGoogleCredential } from "../../google-auth";
 
 export async function POST(request: Request) {
-  const user = await getChatGPTUser();
-  if (!user) return Response.json({ error: "Sign in before sending a message." }, { status: 401 });
-
   const form = await request.formData();
+  const credential = String(form.get("googleCredential") ?? "");
+  const user = await verifyGoogleCredential(credential);
+  if (!user) return Response.json({ error: "Sign in with Google before sending a message." }, { status: 401 });
   const message = String(form.get("message") ?? "").trim().slice(0, 5000);
   if (message.length < 2) return Response.json({ error: "Write a message before sending." }, { status: 400 });
   const apiKey = process.env.RESEND_API_KEY;
