@@ -75,7 +75,7 @@ export const settingLimits: Record<keyof EditableSiteSettings, number> = {
 };
 
 export async function getSiteSettings(): Promise<SiteSettings> {
-  if (!env.DB) return { ...defaultSiteSettings, profilePhotoUrl: "/clark-profile.jpg" };
+  if (!env.DB) return { ...defaultSiteSettings, profilePhotoUrl: null };
   try {
     await ensureSchema(env.DB);
     const rows = await env.DB.prepare("SELECT key,value,updated_at FROM site_settings").all<{ key: string; value: string; updated_at: number }>();
@@ -93,10 +93,10 @@ export async function getSiteSettings(): Promise<SiteSettings> {
       ? `/api/profile-photo?v=${photoVersion}`
       : values.profilePhotoHidden === "1"
         ? null
-        : "/clark-profile.jpg";
+        : null;
     return { ...settings, profilePhotoUrl };
   } catch {
-    return { ...defaultSiteSettings, profilePhotoUrl: "/clark-profile.jpg" };
+    return { ...defaultSiteSettings, profilePhotoUrl: null };
   }
 }
 
