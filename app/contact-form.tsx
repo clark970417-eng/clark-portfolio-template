@@ -3,7 +3,6 @@
 import { FormEvent, useEffect, useRef, useState } from "react";
 
 type GoogleUser = {
-  displayName: string;
   email: string;
 };
 
@@ -54,7 +53,7 @@ export function ContactForm({ contactEmail, googleClientId }: { contactEmail: st
               return;
             }
             setCredential(nextCredential);
-            setUser({ displayName: data.displayName, email: data.email });
+            setUser({ email: data.email });
           },
         });
         buttonRef.current.replaceChildren();
@@ -137,11 +136,11 @@ export function ContactForm({ contactEmail, googleClientId }: { contactEmail: st
   return (
     <form className="contact-form" onSubmit={submit}>
       <div className="contact-identity">
-        <span>Google Account</span>
-        <strong>{user.displayName}</strong>
-        <small>{user.email}</small>
-        <button type="button" onClick={signOut}>Use another account</button>
+        <span>Verified Gmail</span>
+        <strong>{user.email}</strong>
+        <button type="button" onClick={signOut}>Use another Gmail account</button>
       </div>
+      <label>Name<input name="name" type="text" minLength={1} maxLength={80} autoComplete="name" required /></label>
       <label>Message<textarea name="message" rows={4} minLength={2} maxLength={5000} required /></label>
       <div className="form-action">
         <button disabled={state === "sending"}>{state === "sending" ? "Sending…" : "Send message"}<span aria-hidden="true">↗</span></button>

@@ -1,10 +1,8 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 
 export function SiteMotion() {
-  const progress = useRef<HTMLDivElement>(null);
-
   useEffect(() => {
     const navLinks = Array.from(document.querySelectorAll<HTMLAnchorElement>(".site-header nav a[href^='#']"));
     const sections = navLinks.flatMap((link) => {
@@ -17,8 +15,6 @@ export function SiteMotion() {
 
     function update() {
       frame = 0;
-      const pageHeight = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
-      if (progress.current) progress.current.style.transform = `scaleX(${Math.min(1, window.scrollY / pageHeight)})`;
       const marker = window.scrollY + window.innerHeight * 0.32;
       let active = sections[0]?.section.id;
       for (const item of sections) if (item.section.offsetTop <= marker) active = item.section.id;
@@ -53,5 +49,5 @@ export function SiteMotion() {
     };
   }, []);
 
-  return <div className="scroll-progress" ref={progress} aria-hidden="true" />;
+  return null;
 }

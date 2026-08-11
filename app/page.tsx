@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AboutEditorial } from "./about-editorial";
 import { ContactForm } from "./contact-form";
 import { HeroSlideshow } from "./hero-slideshow";
 import { getHeroPhotos, getPublishedEvents } from "./portfolio-data";
@@ -21,7 +22,7 @@ function EventGrid({ items }: { items: PortfolioEvent[] }) {
           <div className="event-caption">
             <span className="event-number">{String(index + 1).padStart(2, "0")}</span>
             <h3>{event.title}</h3>
-            <span className="event-open" aria-hidden="true">View story ↗</span>
+            <span className="event-open" aria-hidden="true">View photos ↗</span>
           </div>
         </Link>
       ))}
@@ -48,6 +49,7 @@ export default async function Home() {
         </nav>
         <nav className="header-socials" aria-label="Social links">
           {settings.instagramUrl && <a href={settings.instagramUrl} target="_blank" rel="noreferrer" aria-label={`${settings.displayName} on Instagram`}>INS</a>}
+          {settings.githubUrl && <a href={settings.githubUrl} target="_blank" rel="noreferrer" aria-label={`${settings.displayName} on GitHub`}>GH</a>}
           {settings.xUrl && <a href={settings.xUrl} target="_blank" rel="noreferrer" aria-label={`${settings.displayName} on X`}>X</a>}
         </nav>
       </header>
@@ -57,7 +59,6 @@ export default async function Home() {
           <p className="hero-kicker">{settings.heroEyebrow}</p>
           <h1 id="intro-title">{settings.heroTitle}</h1>
           <p className="hero-intro">{settings.heroIntro}</p>
-          <a className="hero-scroll" href="#academy">Selected work <span aria-hidden="true">↓</span></a>
         </div>
         {heroPhotos.length ? (
           <HeroSlideshow photos={heroPhotos} />
@@ -71,7 +72,7 @@ export default async function Home() {
             <section className="event-group" id="academy" aria-labelledby="academy-title">
               <div className="section-heading">
                 <div><p>School life &amp; performance</p><h2 id="academy-title">{settings.academyLabel}</h2></div>
-                <div className="section-heading-meta"><p>{schoolEvents.length} {schoolEvents.length === 1 ? "story" : "stories"}</p><a className="section-back" href="#top">Back ↑</a></div>
+                <div className="section-heading-meta"><p>{schoolEvents.length} {schoolEvents.length === 1 ? "story" : "stories"}</p></div>
               </div>
               {schoolEvents.length ? <EventGrid items={schoolEvents} /> : <p className="group-empty">School stories will appear here.</p>}
             </section>
@@ -79,7 +80,7 @@ export default async function Home() {
             <section className="event-group event-group-outside" id="cosplay" aria-labelledby="cosplay-title">
               <div className="section-heading">
                 <div><p>Portraits &amp; subculture</p><h2 id="cosplay-title">{settings.cosplayLabel}</h2></div>
-                <div className="section-heading-meta"><p>{outsideSchoolEvents.length} {outsideSchoolEvents.length === 1 ? "story" : "stories"}</p><a className="section-back" href="#top">Back ↑</a></div>
+                <div className="section-heading-meta"><p>{outsideSchoolEvents.length} {outsideSchoolEvents.length === 1 ? "story" : "stories"}</p></div>
               </div>
               {outsideSchoolEvents.length ? <EventGrid items={outsideSchoolEvents} /> : <p className="group-empty">Cosplay stories will appear here.</p>}
             </section>
@@ -89,39 +90,36 @@ export default async function Home() {
         )}
       </section>
 
-      <section className="about-section" id="about">
+      <section className="about-section" id="about" aria-label={`About ${settings.displayName}`}>
         <div className="about-heading">
-          <div className="section-rail"><p className="section-label">About</p><a className="section-back" href="#top">Back ↑</a></div>
-          <p className="about-identity">{settings.displayName} {settings.nativeName} <span>— {settings.alias}</span></p>
-          <h2>{settings.aboutHeadline}</h2>
+          <div className="section-rail"><p className="section-label">About</p></div>
         </div>
         <div className="about-content">
-          {settings.profilePhotoUrl && <figure className="about-portrait"><div className="about-portrait-frame"><img src={settings.profilePhotoUrl} alt={`${settings.displayName} portrait`} loading="lazy" decoding="async" /></div><figcaption>{settings.displayName} — {settings.alias}</figcaption></figure>}
-          <div className="about-biographies">
-            <div className="about-language"><span>English</span>{settings.aboutBioEn.split(/\n\n+/).map((paragraph) => <p key={paragraph}>{paragraph}</p>)}</div>
-            {settings.aboutBioJa && <details className="about-japanese"><summary>日本語で読む <span aria-hidden="true">＋</span></summary><div>{settings.aboutBioJa.split(/\n\n+/).map((paragraph) => <p key={paragraph}>{paragraph}</p>)}</div></details>}
+          <div className="about-profile">
+            {settings.profilePhotoUrl && <figure className="about-portrait"><div className="about-portrait-frame"><img src={settings.profilePhotoUrl} alt={`${settings.displayName} portrait`} loading="lazy" decoding="async" /></div></figure>}
+            <dl className="about-facts">
+              <div><dt>Photographer</dt><dd>{settings.displayName}</dd></div>
+              <div><dt>Nickname</dt><dd>{settings.alias}</dd></div>
+              <div><dt>Currently</dt><dd>{settings.role}</dd></div>
+              <div><dt>School</dt><dd>{settings.school}</dd></div>
+              <div><dt>Based in</dt><dd>{settings.location}</dd></div>
+              <div><dt>Focus</dt><dd>{settings.focus}</dd></div>
+            </dl>
           </div>
-          <dl className="about-facts">
-            <div><dt>Photographer</dt><dd>{settings.displayName}</dd></div>
-            <div><dt>Currently</dt><dd>{settings.role}</dd></div>
-            <div><dt>School</dt><dd>{settings.school}</dd></div>
-            <div><dt>Based in</dt><dd>{settings.location}</dd></div>
-            <div><dt>Focus</dt><dd>{settings.focus}</dd></div>
-          </dl>
-          {features.length > 0 && <div className="about-features"><div className="about-features-heading"><h3>Selected Features &amp; Official Use</h3><span>{String(features.length).padStart(2, "0")} entries</span></div><ol>{features.map((feature) => <li key={`${feature.source}-${feature.title}`}><a href={feature.url} target="_blank" rel="noreferrer"><span className="feature-source">{feature.source}</span><span className="feature-title">{feature.title}</span><span className="feature-year">{feature.year} <i aria-hidden="true">↗</i></span></a></li>)}</ol></div>}
+          <AboutEditorial bioEn={settings.aboutBioEn} bioJa={settings.aboutBioJa} features={features} />
         </div>
       </section>
 
       <section className="contact-section" id="contact">
         <div className="contact-copy">
-          <div className="section-rail"><p className="section-label">Contact</p><a className="section-back" href="#top">Back ↑</a></div>
+          <div className="section-rail"><p className="section-label">Contact</p></div>
           <h2>{settings.contactHeadline}</h2>
-          <div className="contact-links"><a href={`mailto:${settings.contactEmail}`}>{settings.contactEmail}</a>{settings.instagramUrl && <a href={settings.instagramUrl} target="_blank" rel="noreferrer">Instagram ↗</a>}{settings.xUrl && <a href={settings.xUrl} target="_blank" rel="noreferrer">X / {settings.alias} ↗</a>}</div>
+          <div className="contact-links"><a href={`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(settings.contactEmail)}`} target="_blank" rel="noreferrer">{settings.contactEmail}</a>{settings.instagramUrl && <a href={settings.instagramUrl} target="_blank" rel="noreferrer">Instagram ↗</a>}{settings.xUrl && <a href={settings.xUrl} target="_blank" rel="noreferrer">X / {settings.alias} ↗</a>}{settings.githubUrl && <a href={settings.githubUrl} target="_blank" rel="noreferrer">GitHub ↗</a>}<a href="#top">Back to top ↑</a></div>
         </div>
         <ContactForm contactEmail={settings.contactEmail} googleClientId={process.env.GOOGLE_CLIENT_ID ?? null} />
       </section>
 
-      <footer><span>© {new Date().getFullYear()} {settings.displayName}</span><span>{settings.alias} / Photography</span><a href="#top">Back to top ↑</a></footer>
+      <footer><span>© {new Date().getFullYear()} {settings.displayName}</span><span>{settings.alias} / Photography</span></footer>
     </main>
   );
 }

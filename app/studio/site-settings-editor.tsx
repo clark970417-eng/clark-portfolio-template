@@ -108,7 +108,6 @@ export function SiteSettingsEditor({ initialSettings }: { initialSettings: SiteS
             <div><label className="studio-upload studio-profile-upload">Choose profile photo<input type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => uploadProfilePhoto(event.target.files)} disabled={busy} /></label>{settings.profilePhotoUrl && <button type="button" className="studio-delete" onClick={removeProfilePhoto} disabled={busy}>Remove photo</button>}<p>Used in the About section. JPEG, PNG, or WebP.</p></div>
           </div>
           <div className="studio-settings-grid">
-            <label className="is-wide">About headline<textarea rows={3} value={settings.aboutHeadline} onChange={(event) => set("aboutHeadline", event.target.value)} /></label>
             <label>English biography<textarea rows={12} value={settings.aboutBioEn} onChange={(event) => set("aboutBioEn", event.target.value)} /></label>
             <label>Japanese biography<textarea rows={12} value={settings.aboutBioJa} onChange={(event) => set("aboutBioJa", event.target.value)} /></label>
             <label>Role<input value={settings.role} onChange={(event) => set("role", event.target.value)} /></label>
@@ -124,6 +123,7 @@ export function SiteSettingsEditor({ initialSettings }: { initialSettings: SiteS
             <label>Contact headline<input value={settings.contactHeadline} onChange={(event) => set("contactHeadline", event.target.value)} /></label>
             <label>Contact email<input type="email" value={settings.contactEmail} onChange={(event) => set("contactEmail", event.target.value)} /></label>
             <label>Instagram URL<input type="url" value={settings.instagramUrl} onChange={(event) => set("instagramUrl", event.target.value)} /></label>
+            <label>GitHub URL<input type="url" value={settings.githubUrl} onChange={(event) => set("githubUrl", event.target.value)} /></label>
             <label>X URL<input type="url" value={settings.xUrl} onChange={(event) => set("xUrl", event.target.value)} /></label>
           </div>
         </fieldset>

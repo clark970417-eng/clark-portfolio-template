@@ -72,5 +72,15 @@ async function initializeSchema(db: D1) {
     await db.prepare("ALTER TABLE photos ADD COLUMN thumbnail_key text").run();
   }
 
+  const refreshedAt = Date.now();
+  await db.batch([
+    db.prepare("UPDATE site_settings SET value = ?, updated_at = ? WHERE key = 'heroEyebrow' AND value = ?")
+      .bind("Taiwan-based student photographer", refreshedAt, "Clark Lo / YuYing"),
+    db.prepare("UPDATE site_settings SET value = ?, updated_at = ? WHERE key = 'heroTitle' AND value = ?")
+      .bind("I keep the moments that usually pass.", refreshedAt, "Academy.\nCosplay.\nPeople."),
+    db.prepare("UPDATE site_settings SET value = ?, updated_at = ? WHERE key = 'heroIntro' AND value = ?")
+      .bind("Working across school life, performance, portraiture, cosplay, and the quiet human stories between them.", refreshedAt, "Photography in Taiwan, 2024—2026."),
+  ]);
+
   await db.prepare("PRAGMA optimize").run();
 }

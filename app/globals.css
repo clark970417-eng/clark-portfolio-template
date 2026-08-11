@@ -99,9 +99,8 @@ main { overflow-x:clip; }
 .google-sign-in { width:min(100%,360px); min-height:44px; }
 .contact-auth-error { margin-top:16px!important; color:#9b352a!important; }
 .contact-identity { margin-bottom:36px; padding:0 0 16px; border-bottom:1px solid var(--ink); }
-.contact-identity span,.contact-identity strong,.contact-identity small { display:block; }
-.contact-identity strong { margin-bottom:5px; font:400 22px var(--font-body); }
-.contact-identity small { color:var(--muted); font:11px var(--font-mono); }
+.contact-identity span,.contact-identity strong { display:block; }
+.contact-identity strong { overflow-wrap:anywhere; font:400 15px var(--font-body); }
 .contact-identity button { margin-top:12px; padding:0; border:0; background:transparent; color:var(--muted); cursor:pointer; font:9px var(--font-mono); text-transform:uppercase; letter-spacing:.06em; }
 .contact-identity button:hover { color:var(--red); }
 .contact-form label { display:block; padding:0 0 12px; margin-bottom:36px; border-bottom:1px solid var(--ink); font:10px var(--font-mono); text-transform:uppercase; letter-spacing:.08em; transition:border-color .2s; }

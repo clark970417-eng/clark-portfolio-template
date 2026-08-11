@@ -10,7 +10,6 @@ export type EditableSiteSettings = {
   heroEyebrow: string;
   heroTitle: string;
   heroIntro: string;
-  aboutHeadline: string;
   aboutBioEn: string;
   aboutBioJa: string;
   role: string;
@@ -20,6 +19,7 @@ export type EditableSiteSettings = {
   contactHeadline: string;
   contactEmail: string;
   instagramUrl: string;
+  githubUrl: string;
   xUrl: string;
   featuresText: string;
 };
@@ -35,7 +35,6 @@ export const defaultSiteSettings: EditableSiteSettings = {
   heroEyebrow: "Taiwan-based student photographer",
   heroTitle: "I keep the moments that usually pass.",
   heroIntro: "Working across school life, performance, portraiture, cosplay, and the quiet human stories between them.",
-  aboutHeadline: "Photography is less about recording what happened than preserving the moments that might otherwise disappear.",
   aboutBioEn: "Clark’s photography began behind the scenes of school events, where he became drawn to moments that happen outside the center of attention—subtle gestures, changing expressions, and the quiet transitions that shape how a place feels.\n\nAs Co-Head of the Media Crew at Pacific American School, he photographs performances and major campus events while mentoring newer photographers and developing post-production workflows. Beyond school, his work has expanded to robotics competitions, Model United Nations conferences, and Taiwan’s cosplay and subculture events, including Fancy Frontier and acosta!.\n\nMoving between documentary coverage and portraiture, Clark focuses on natural expressions, atmosphere, and the relationship between people and their surroundings.",
   aboutBioJa: "台湾を拠点に、ポートレート、パフォーマンス、学校生活、コスプレ、そして人々の物語を撮影する学生フォトグラファー。\n\nクラークの写真活動は、学校行事の舞台裏を記録することから始まりました。ステージの中心だけでなく、何気ない仕草や変化する表情、その場の空気が切り替わる瞬間など、見過ごされやすい場面に惹かれています。\n\nPacific American SchoolではMedia CrewのCo-Headとして、学校行事やパフォーマンスを撮影しながら、後輩フォトグラファーのサポートやポストプロダクションのワークフロー作りにも取り組んでいます。学校外では、ロボティクス大会、模擬国連、Fancy Frontierやacosta!などのコスプレ・サブカルチャーイベントでも撮影を行っています。",
   role: "Student photographer · Media Crew Co-Head",
@@ -45,6 +44,7 @@ export const defaultSiteSettings: EditableSiteSettings = {
   contactHeadline: "Have something in mind?",
   contactEmail: "clark970417@gmail.com",
   instagramUrl: "https://www.instagram.com/yin_0417.jpg/?hl=en",
+  githubUrl: "https://github.com/clark970417-eng",
   xUrl: "https://x.com/4yuying?s=21&t=h7d3UL9mlLZ0_H-FhiEjOQ",
   featuresText: "eruk | Roxy / Mushoku Tensei at FF46 | 2026 | https://x.com/A_erukun/status/2020708829672112219?s=20\nZakuro | Fuyuko at Comic Market 105 | 2024 | https://www.facebook.com/share/p/1JqoHXB3XR/\nPacific American School | PASVEX Signature Event Campaign | 2026 | https://www.facebook.com/share/p/1CZzFs8RcV/\nPacific American School | PASMUN Conference Coverage | 2026 | https://www.facebook.com/share/p/1bQ8ZZocCP/",
 };
@@ -60,7 +60,6 @@ export const settingLimits: Record<keyof EditableSiteSettings, number> = {
   heroEyebrow: 140,
   heroTitle: 180,
   heroIntro: 420,
-  aboutHeadline: 320,
   aboutBioEn: 4000,
   aboutBioJa: 4000,
   role: 180,
@@ -70,6 +69,7 @@ export const settingLimits: Record<keyof EditableSiteSettings, number> = {
   contactHeadline: 180,
   contactEmail: 240,
   instagramUrl: 500,
+  githubUrl: 500,
   xUrl: 500,
   featuresText: 6000,
 };
